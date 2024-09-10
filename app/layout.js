@@ -16,7 +16,8 @@ export default function RootLayout({ children }) {
     <div className="w-1/5">
     <Dashboard/>
     </div>
-    <main>{children}</main>
+    <main className="w-4/5">{children}</main>
+   
     </body>
     
      
