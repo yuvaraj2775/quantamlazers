@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const TableComponent = () => {
   // Initialize state with an array of objects representing table rows
@@ -9,7 +9,6 @@ const TableComponent = () => {
     { id: 3, name: 'Item 3', value: 'Value 3' },
   ]);
 
-  // State to manage form inputs for adding a new row
   const [formData, setFormData] = useState({
     id: '',
     name: '',
@@ -27,22 +26,42 @@ const TableComponent = () => {
   };
 
   // Handle form submission
-  const handleAddRow = (e) => {
+  const handleAddRow = async (e) => {
     e.preventDefault();
     const { id, name, value, index } = formData;
     if (id && name && value && index >= 0 && index <= data.length) {
       const newRow = {
-        id: parseInt(id), // Convert id to a number
+        id: parseInt(id), 
         name,
         value,
       };
 
-      setData(prevData => {
-        const newData = [...prevData];
-        newData.splice(parseInt(index), 0, newRow); // Insert the new row at the specified index
-        return newData;
-      });
-      setFormData({ id: '', name: '', value: '', index: data.length }); // Clear form and reset index to end
+      try {
+        const response = await fetch('/api/addRow', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'quotation.db',
+          },
+         
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        // Assuming the response contains the added row, update the state
+        const addedRow = await response.json();
+
+        setData(prevData => {
+          const newData = [...prevData];
+          newData.splice(parseInt(index), 0, addedRow); 
+          return newData;
+        });
+        setFormData({ id: '', name: '', value: '', index: data.length }); // Clear form and reset index to end
+      } catch (error) {
+        console.error('Error adding row:', error);
+        alert('Failed to add row. Please try again.');
+      }
     } else {
       alert('Please fill in all fields and ensure index is valid');
     }

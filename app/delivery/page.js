@@ -1,10 +1,9 @@
 "use client";
+import { Textarea } from "@headlessui/react";
 import React, { useState } from "react";
 
 export default function Page() {
-  const [data, setData] = useState([
-    { id: 1, name: "Item 1", hsn: "HSN1", qty: 10, umoremarks: "Remark1" },
-  ]);
+  const [data, setData] = useState([]);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -41,8 +40,7 @@ export default function Page() {
         qty: parseInt(qty),
         umoremarks,
       };
-
-      setData((prev) => [...prev, newRow]); // Append the new row to the end
+      setData((prev) => [...prev, newRow]);
 
       setFormData({
         id: "",
@@ -50,25 +48,60 @@ export default function Page() {
         hsn: "",
         qty: "",
         umoremarks: "",
-      }); // Clear form data
+      });
     }
   };
 
-  const handleChange = (e) => {
-    e.preventDefault();
-    setInputData({
-      Buyer: "",
-      docdate: "",
-      ordername: "",
-      orderdate: "",
-      vehiclenumber: "",
-      gstnumber: "",
-      dcnumber: "",
-      dcdate: "",
-    });
-    console.log("submit", inputData);
+  const deleteItem = (indexToDelete) => {
+    const updatedItems = [
+      ...formData.slice(0, indexToDelete),
+      ...formData.slice(indexToDelete + 1),
+    ];
+    setItems(updatedItems);
   };
 
+  const handleChange = async (e) => {
+    e.preventDefault(); // Prevents the default form submission behavior
+
+    try {
+      const response = await fetch("/api/Formdata", {
+        method: "POST",
+        body: JSON.stringify(inputData),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(
+          "Error while submitting:",
+          result.error || "Unknown error"
+        );
+      } else {
+        console.log("Data added successfully:", result.message || "Success");
+        // Reset the form data only if submission is successful
+        setInputData({
+          Buyer: "",
+          docdate: "",
+          ordername: "",
+          orderdate: "",
+          vehiclenumber: "",
+          gstnumber: "",
+          dcnumber: "",
+          dcdate: "",
+        });
+      }
+    } catch (error) {
+      console.error("Request failed:", error);
+    }
+  };
+  const handlefetch = async () => {
+    const response = await fetch("/api/Formdata");
+    const result = await response.json()
+    console.log("result",result)
+  };
   const changing = (e) => {
     setInputData({ ...inputData, [e.target.name]: e.target.value });
   };
@@ -197,7 +230,6 @@ export default function Page() {
                       value={formData.id}
                       onChange={handleInputChange}
                       placeholder="ID"
-                      required
                     />
                   </td>
                   <td>
@@ -207,7 +239,6 @@ export default function Page() {
                       value={formData.name}
                       onChange={handleInputChange}
                       placeholder="Name"
-                      required
                     />
                   </td>
                   <td>
@@ -217,7 +248,6 @@ export default function Page() {
                       value={formData.hsn}
                       onChange={handleInputChange}
                       placeholder="HSN"
-                      required
                     />
                   </td>
                   <td>
@@ -227,7 +257,6 @@ export default function Page() {
                       value={formData.qty}
                       onChange={handleInputChange}
                       placeholder="Qty"
-                      required
                     />
                   </td>
                   <td>
@@ -237,11 +266,13 @@ export default function Page() {
                       value={formData.umoremarks}
                       onChange={handleInputChange}
                       placeholder="UMO / Remarks"
-                      required
                     />
                   </td>
                   <td>
                     <button onClick={handleAddRow}>Add</button>
+                  </td>
+                  <td>
+                    <button onClick={deleteItem}>delete</button>
                   </td>
                 </tr>
               </tbody>
@@ -254,6 +285,9 @@ export default function Page() {
           <div className="flex justify-center mt-4">
             <div className="text-center cursor-pointer border-2 p-2 w-14 rounded-md bg-green-500 text-white">
               <button type="submit">Save</button>
+            </div>
+            <div onClick={handlefetch} className="text-center cursor-pointer border-2 p-2 w-14 rounded-md bg-green-500 text-white">
+              <button type="button">fetch</button>
             </div>
           </div>
         </div>
