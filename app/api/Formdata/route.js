@@ -30,6 +30,7 @@ async function initDb() {
         gst_number TEXT,
         dc_number TEXT,
         dc_issue_date DATE
+         
       )
     `);
     console.log("Created 'quotation' table");
@@ -53,33 +54,81 @@ async function initDb() {
     console.error("Error initializing database:", error);
   }
 }
-
-// Handle POST request for quotations
 export async function POST(req) {
   let db;
   try {
     await initDb(); // Ensure the database schema is initialized
 
     const data = await req.json();
-    const { Buyer, docdate, vehiclenumber, gstnumber, dcnumber, dcdate } = data;
+    const {
+      Buyer,
+      docdate,
+      vehiclenumber,
+      gstnumber,
+      dcnumber,
+      dcdate,
+      items,
+    } = data;
 
-    if (!Buyer || !docdate || !vehiclenumber || !gstnumber || !dcnumber || !dcdate) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (
+      !Buyer ||
+      !docdate ||
+      !vehiclenumber ||
+      !gstnumber ||
+      !dcnumber ||
+      !dcdate ||
+      !items
+    ) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
     db = await opendb(); // Ensure database connection is open
 
-    const insertSql = `
+    // Insert into `quotation` table
+    const insertQuotationSql = `
       INSERT INTO quotation (buyer, dc_date, vehicle_number, gst_number, dc_number, dc_issue_date)
-      VALUES (?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?);
+    `;
+    const result = await db.run(insertQuotationSql, [
+      Buyer,
+      docdate,
+      vehiclenumber,
+      gstnumber,
+      dcnumber,
+      dcdate,
+    ]);
+
+    // Retrieve the ID of the inserted quotation
+    const quotationId = result.lastID;
+
+    // Prepare SQL for inserting items
+    const insertItemSql = `
+      INSERT INTO items ( quotation_id,name, hsn, qty, umoremarks, remarks)
+      VALUES ( ?,?, ?, ?, ?, ?);
     `;
 
-    await db.run(insertSql, [Buyer, docdate, vehiclenumber, gstnumber, dcnumber, dcdate]);
+    // Insert items
+    for (const item of items) {
+      await db.run(insertItemSql, [
+        quotationId,
+        item.name,
+        item.hsn,
+        item.qty,
+        item.umoremarks,
+        item.remarks,
+      ]);
+    }
 
     return NextResponse.json({ message: "Data inserted successfully" });
   } catch (error) {
     console.error("Error during database operation:", error);
-    return NextResponse.json({ error: "Database error: " + error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: "Database error: " + error.message },
+      { status: 500 }
+    );
   } finally {
     if (db) {
       await db.close(); // Ensure the database connection is closed
@@ -91,69 +140,22 @@ export async function POST(req) {
 // Handle GET request for quotations
 export async function GET() {
   let db;
-  try {
-    await initDb(); // Ensure the database schema is initialized
+  try {          
+    await initDb(); // Ensure the database schema is initialized 
+    
     db = await opendb();
     const selectSql = `SELECT * FROM quotation`;
     const data = await db.all(selectSql);
     return NextResponse.json({ data });
   } catch (err) {
     console.log(err);
-    return NextResponse.json({ error: "Database error: " + err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: "Database error: " + err.message },
+      { status: 500 }
+    );
   } finally {
     if (db) {
       await db.close(); // Ensure the database connection is closed
-      console.log("Closed the database connection.");
-    }
-  }
-}
-
-// Handle POST request for items
-export async function POSTItems(req) {
-  let db;
-  try {
-    const data = await req.json();
-    const { quotation_id, name, hsn, qty, umoremarks, remarks } = data;
-
-    if (!quotation_id || !name || !hsn || !qty) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    db = await opendb();
-
-    const insertSql = `
-      INSERT INTO items (quotation_id, name, hsn, qty, umoremarks, remarks)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
-
-    await db.run(insertSql, [quotation_id, name, hsn, qty, umoremarks, remarks]);
-
-    return NextResponse.json({ message: "Item inserted successfully" });
-  } catch (error) {
-    console.error("Error during database operation:", error);
-    return NextResponse.json({ error: "Database error: " + error.message }, { status: 500 });
-  } finally {
-    if (db) {
-      await db.close();
-      console.log("Closed the database connection.");
-    }
-  }
-}
-
-// Handle GET request for items
-export async function GETItems() {
-  let db;
-  try {
-    db = await opendb();
-    const selectSql = `SELECT * FROM items`;
-    const data = await db.all(selectSql);
-    return NextResponse.json({ data });
-  } catch (err) {
-    console.log(err);
-    return NextResponse.json({ error: "Database error: " + err.message }, { status: 500 });
-  } finally {
-    if (db) {
-      await db.close();
       console.log("Closed the database connection.");
     }
   }

@@ -8,7 +8,7 @@ const Page = () => {
     
 
     return (
-        <div className='w-screen overflow-y-auto h-screen m-4'>
+        <div className='w-full overflow-y-auto h-screen m-4'>
             <h1 className='font-bold text-3xl text-center p-5'>Generated Quote</h1>
             <div className='min-w-full mx-2 mt-2 border-2 border-black space-y-5'>
                 <div className='flex space-x-5'>
