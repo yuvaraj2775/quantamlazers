@@ -23,6 +23,8 @@ export default function Page() {
     ],
   });
 
+  
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setInputData((prev) => ({ ...prev, [name]: value, items: formData }));
@@ -247,7 +249,7 @@ export default function Page() {
                       name="umoremarks"
                       value={item.umoremarks}
                       onChange={(e) => handleRowChange(index, e)}
-                      placeholder="UMO / Remarks"
+                      placeholder="UMO "
                       className="w-full border-2 rounded p-1"
                     />
                   </td>
