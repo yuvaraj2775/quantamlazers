@@ -30,7 +30,7 @@ const Page = () => {
       <div className="min-w-full mx-2 mt-2 border-2 border-black space-y-5">
         <div className="flex space-x-5">
           <div>
-            <img src={fetchedData?.imageURL} alt="Product" />
+            <img src="" alt="Product" />
           </div>
           <div>
             <h2 className="text-yellow-500 font-bold text-xl uppercase">
@@ -39,9 +39,10 @@ const Page = () => {
             {fetchedData?.data.map((item, index) => (
               <div key={index} className="text-blue-900 font-semibold text-xl">
                 <p>ID: {item.id}</p>
-                <p>Description: {item.name}</p>
+                <p>Description: {item.id}</p>
               </div>
-            ))}
+               ))}
+           
           </div>
         </div>
         <div className="text-blue-700 italic font-semibold">
@@ -58,7 +59,7 @@ const Page = () => {
       <div className="min-w-full grid grid-cols-2 mx-2 border-x-2 border-b-2 border-black">
         <div className="flex justify-start items-end pb-3 border-r-2 border-black px-2 font-semibold">
           <div>
-            <p>{fetchedData?.clientName}</p>
+            <p>{fetchedData?.buyer}</p>
             <p>GST NO: {fetchedData?.clientGST}</p>
             <p>Kind Attn: {fetchedData?.clientAttention}</p>
           </div>
@@ -80,10 +81,12 @@ const Page = () => {
       <div className="min-w-full mx-2 border-x-2 border-b-2 border-black font-semibold">
         <p>Subject: {fetchedData?.subject}</p>
       </div>
+      
 
       <div className="min-w-full mx-2 border-x-2 border-b-2 border-black pt-3">
         <p>We are pleased to submit the following quote as requested</p>
       </div>
+      
 
       <div>
         <table className="mx-2 min-w-full mb-10">

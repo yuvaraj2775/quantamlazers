@@ -1,6 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import swal from 'sweetalert';
+
 
 export default function Page() {
   const [formData, setFormData] = useState({ items: [] });
@@ -59,6 +61,35 @@ export default function Page() {
     const newItems = formData.items.filter((_, i) => i !== index);
     setFormData({ items: newItems });
   };
+
+  const [fetchedData, setFetchedData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("/api/Formdata");
+        if (!response.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        const result = await response.json();
+        console.log("Fetched Data:", result);
+        setFetchedData(result);
+      } catch (error) {
+        console.error("Fetch failed:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+    function handlechange(){
+      {fetchedData?.data.map((item) => (
+       
+          swal(`Your quotation ID is ${item.id + 1}`)
+         ))}
+  }
+
+  
 
   const handleSubmit = async (e) => {
     console.log(inputData, "heloo");
@@ -127,6 +158,7 @@ export default function Page() {
   return (
     <form onSubmit={handleSubmit}>
       <div className="h-screen w-full p-4">
+     
         <h1 className="text-center mt-5 font-bold text-xl">DC Form</h1>
 
         <div className="grid grid-cols-2 gap-4">
@@ -297,18 +329,21 @@ export default function Page() {
         </div>
 
         <div className="flex justify-center mt-4 gap-4">
-          <button
+          <button 
             type="submit"
             className="text-center cursor-pointer border-2 p-2 w-24 rounded-md bg-green-500 text-white"
+            onClick={handlechange}
           >
             Save
           </button>
+         
           <button
             type="button"
             onClick={handlefetch}
+            oncl
             className="text-center cursor-pointer border-2 p-2 w-24 rounded-md bg-green-500 text-white"
           >
-            Fetch
+            view
           </button>
           <button
             type="button"

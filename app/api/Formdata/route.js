@@ -30,7 +30,6 @@ async function initDb() {
         gst_number TEXT,
         dc_number TEXT,
         dc_issue_date DATE
-         
       )
     `);
     console.log("Created 'quotation' table");
@@ -54,6 +53,7 @@ async function initDb() {
     console.error("Error initializing database:", error);
   }
 }
+
 export async function POST(req) {
   let db;
   try {
@@ -106,8 +106,8 @@ export async function POST(req) {
 
     // Prepare SQL for inserting items
     const insertItemSql = `
-      INSERT INTO items ( quotation_id,name, hsn, qty, umoremarks, remarks)
-      VALUES ( ?,?, ?, ?, ?, ?);
+      INSERT INTO items (quotation_id, name, hsn, qty, umoremarks, remarks)
+      VALUES (?, ?, ?, ?, ?, ?);
     `;
 
     // Insert items
@@ -140,11 +140,11 @@ export async function POST(req) {
 // Handle GET request for quotations
 export async function GET() {
   let db;
-  try {          
-    await initDb(); // Ensure the database schema is initialized 
-    
+  try {
+    await initDb(); // Ensure the database schema is initialized
+
     db = await opendb();
-    const selectSql = `SELECT * FROM quotation`;
+    const selectSql = `SELECT * FROM quotation ORDER by id DESC LIMIT 1`;
     const data = await db.all(selectSql);
     return NextResponse.json({ data });
   } catch (err) {
