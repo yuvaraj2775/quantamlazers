@@ -119,6 +119,7 @@ export default function Page() {
           gstnumber: "",
           dcnumber: "",
           dcdate: "",
+         
           table: [
             {
               id: "",
@@ -182,6 +183,7 @@ export default function Page() {
               value={inputData.docdate}
               onChange={handleInputChange}
             />
+            
           </div>
         </div>
 
@@ -193,7 +195,7 @@ export default function Page() {
               name="vehiclenumber"
               value={inputData.vehiclenumber}
               onChange={handleInputChange}
-              className="h-10 w-full border-2"
+              className="h-10 w-full rounded border-2"
             />
           </div>
           <div>
@@ -203,7 +205,7 @@ export default function Page() {
               name="gstnumber"
               value={inputData.gstnumber}
               onChange={handleInputChange}
-              className="h-10 w-full border-2"
+              className="h-10 rounded w-full border-2"
             />
           </div>
           <div>
@@ -213,7 +215,7 @@ export default function Page() {
               name="dcnumber"
               value={inputData.dcnumber}
               onChange={handleInputChange}
-              className="h-10 w-full border-2"
+              className="h-10 rounded w-full border-2"
             />
           </div>
           <div>
@@ -223,15 +225,15 @@ export default function Page() {
               name="dcdate"
               value={inputData.dcdate}
               onChange={handleInputChange}
-              className="h-10 w-full border-2"
+              className="h-10 rounded w-full border-2"
             />
           </div>
         </div>
 
-        <div className="capitalize border-2 mt-5">
+        <div className="capitalize rounded-md border-2 mt-5">
           <table className="w-full">
             <thead>
-              <tr className="border-b-2">
+              <tr className=" rounded-md border-b-2">
                 <th className="w-32">Sl. No</th>
                 <th className="w-32 border-l-2">Item Name / Description</th>
                 <th className="w-32 border-l-2">HSN Code</th>
@@ -307,11 +309,11 @@ export default function Page() {
                 </tr>
               ))}
               <tr>
-                <td colSpan="7">
+                <td colSpan="">
                   <button
                     type="button"
                     onClick={handleAddRow}
-                    className="text-green-500"
+                    className="text-green-500 ml-5"
                   >
                     Add
                   </button>
@@ -319,7 +321,7 @@ export default function Page() {
               </tr>
             </tbody>
           </table>
-          <p className="font-bold mt-2">
+          <p className="font-bold mt-2 ml-32">
             Total Number of Qty:{" "}
             {formData.items.reduce(
               (acc, item) => acc + Number(item.qty || 0),

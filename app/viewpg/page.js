@@ -17,7 +17,7 @@ export default function Page() {
         const result = await response.json();
         console.log("Fetched Data:", result);
         setFetchedData(result);
-        setFormData({ items: result.data });
+        setFormData({ items: result.data, data2 });
       } catch (error) {
         console.error("Fetch failed:", error);
       }
@@ -47,7 +47,10 @@ export default function Page() {
   const handleAddRow = () => {
     setFormData((prev) => ({
       ...prev,
-      items: [...prev.items, { name: "", hsn: "", qty: "", umoremarks: "", remarks: "" }],
+      items: [
+        ...prev.items,
+        { name: "", hsn: "", qty: "", umoremarks: "", remarks: "" },
+      ],
     }));
   };
 
@@ -68,76 +71,80 @@ export default function Page() {
 
   return (
     <form onSubmit={handleSubmit}>
-      {fetchedData?.data.map((item, index) => (
-        <div className="h-screen w-full p-4" key={index}>
-          <h1 className="text-center mt-5 font-bold text-xl">DC Form</h1>
+      
+        <div className="h-screen  overflow-y-auto w-full p-4">
+        {fetchedData?.data.map((item, index) => (
+          <div  key={index}>
+            <h1 className="text-center mt-5 font-bold text-xl">DC Form</h1>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="capitalize">
-              <label htmlFor="Buyer">Buyer</label>
-              <input
-                type="text"
-                className="border-2 rounded h-10 w-full"
-                name="Buyer"
-                value={item.buyer}
-                onChange={handleInputChange}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="capitalize">
+                <label htmlFor="Buyer">Buyer</label>
+                <input
+                  type="text"
+                  className="border-2 rounded h-10 w-full"
+                  name="Buyer"
+                  value={item.buyer}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className="capitalize">
+                <label htmlFor="docdate">DC Date</label>
+                <input
+                  type="date"
+                  className="px-2 border-2 h-10 rounded w-full"
+                  name="docdate"
+                  value={item.dc_date}
+                  onChange={handleInputChange}
+                />
+              </div>
             </div>
 
-            <div className="capitalize">
-              <label htmlFor="docdate">DC Date</label>
-              <input
-                type="date"
-                className="px-2 border-2 h-10 rounded w-full"
-                name="docdate"
-                value={item.dc_date}
-                onChange={handleInputChange}
-              />
+            <div className="grid grid-cols-4 gap-4 mt-4">
+              <div>
+                <label htmlFor="vehiclenumber">Vehicle Number</label>
+                <input
+                  type="text"
+                  name="vehiclenumber"
+                  value={item.vehicle_number}
+                  onChange={handleInputChange}
+                  className="h-10 w-full border-2"
+                />
+              </div>
+              <div>
+                <label htmlFor="gstnumber">GST Number</label>
+                <input
+                  type="text"
+                  name="gstnumber"
+                  value={item.gst_number}
+                  onChange={handleInputChange}
+                  className="h-10 w-full border-2"
+                />
+              </div>
+              <div>
+                <label htmlFor="dcnumber">DC Number</label>
+                <input
+                  type="text"
+                  name="dcnumber"
+                  value={item.dc_number}
+                  onChange={handleInputChange}
+                  className="h-10 w-full border-2"
+                />
+              </div>
+              <div>
+                <label htmlFor="dcdate">DC Date</label>
+                <input
+                  type="text"
+                  name="dcdate"
+                  value={item.dc_date}
+                  onChange={handleInputChange}
+                  className="h-10 w-full border-2"
+                />
+              </div>
             </div>
           </div>
-
-          <div className="grid grid-cols-4 gap-4 mt-4">
-            <div>
-              <label htmlFor="vehiclenumber">Vehicle Number</label>
-              <input
-                type="text"
-                name="vehiclenumber"
-                value={item.vehicle_number}
-                onChange={handleInputChange}
-                className="h-10 w-full border-2"
-              />
-            </div>
-            <div>
-              <label htmlFor="gstnumber">GST Number</label>
-              <input
-                type="text"
-                name="gstnumber"
-                value={item.gst_number}
-                onChange={handleInputChange}
-                className="h-10 w-full border-2"
-              />
-            </div>
-            <div>
-              <label htmlFor="dcnumber">DC Number</label>
-              <input
-                type="text"
-                name="dcnumber"
-                value={item.dc_number}
-                onChange={handleInputChange}
-                className="h-10 w-full border-2"
-              />
-            </div>
-            <div>
-              <label htmlFor="dcdate">DC Date</label>
-              <input
-                type="text"
-                name="dcdate"
-                value={item.dc_date}
-                onChange={handleInputChange}
-                className="h-10 w-full border-2"
-              />
-            </div>
-          </div>
+            ))}
 
           <div className="capitalize border-2 mt-5">
             <table className="w-full">
@@ -153,7 +160,7 @@ export default function Page() {
                 </tr>
               </thead>
 
-              { formData.items.map((e, i) => (
+              {fetchedData?.data2.map((item, i) => (
                 <tbody key={i}>
                   <tr>
                     <td>{i + 1}</td>
@@ -161,7 +168,7 @@ export default function Page() {
                       <input
                         type="text"
                         name="name"
-                        value={e.name}
+                        value={item.name}
                         onChange={(e) => handleRowChange(i, e)}
                         placeholder="Name"
                         className="w-full border-2 rounded p-1"
@@ -171,7 +178,7 @@ export default function Page() {
                       <input
                         type="text"
                         name="hsn"
-                        value={e.hsn}
+                        value={item.hsn}
                         onChange={(e) => handleRowChange(i, e)}
                         placeholder="HSN"
                         className="w-full border-2 rounded p-1"
@@ -181,7 +188,7 @@ export default function Page() {
                       <input
                         type="number"
                         name="qty"
-                        value={e.qty}
+                        value={item.qty}
                         onChange={(e) => handleRowChange(i, e)}
                         placeholder="Qty"
                         className="w-full border-2 rounded p-1"
@@ -191,7 +198,7 @@ export default function Page() {
                       <input
                         type="text"
                         name="umoremarks"
-                        value={e.umoremarks}
+                        value={item.umoremarks}
                         onChange={(e) => handleRowChange(i, e)}
                         placeholder="UMO "
                         className="w-full border-2 rounded p-1"
@@ -201,7 +208,7 @@ export default function Page() {
                       <input
                         type="text"
                         name="remarks"
-                        value={e.remarks}
+                        value={item.remarks}
                         onChange={(e) => handleRowChange(i, e)}
                         placeholder="Remarks"
                         className="w-full border-2 rounded p-1"
@@ -229,7 +236,7 @@ export default function Page() {
             </p>
           </div>
         </div>
-      ))}
+    
     </form>
   );
 }

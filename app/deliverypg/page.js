@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import React from "react";
 
-const Page = () => {
+const page = () => {
   const [fetchedData, setFetchedData] = useState(null);
 
   useEffect(() => {
@@ -25,7 +25,9 @@ const Page = () => {
   }, []);
 
   return (
-    <div className="w-full overflow-y-auto h-screen m-4">
+    <div>
+      {fetchedData?.data.map((item, index) => (
+       <div className="w-full overflow-y-auto h-screen m-4">
       <h1 className="font-bold text-3xl text-center p-5">Generated Quote</h1>
       <div className="min-w-full mx-2 mt-2 border-2 border-black space-y-5">
         <div className="flex space-x-5">
@@ -36,12 +38,12 @@ const Page = () => {
             <h2 className="text-yellow-500 font-bold text-xl uppercase">
               Quantum Lasers
             </h2>
-            {fetchedData?.data.map((item, index) => (
+            
               <div key={index} className="text-blue-900 font-semibold text-xl">
                 <p>ID: {item.id}</p>
                 <p>Description: {item.id}</p>
               </div>
-               ))}
+            
            
           </div>
         </div>
@@ -59,27 +61,28 @@ const Page = () => {
       <div className="min-w-full grid grid-cols-2 mx-2 border-x-2 border-b-2 border-black">
         <div className="flex justify-start items-end pb-3 border-r-2 border-black px-2 font-semibold">
           <div>
-            <p>{fetchedData?.buyer}</p>
-            <p>GST NO: {fetchedData?.clientGST}</p>
-            <p>Kind Attn: {fetchedData?.clientAttention}</p>
+            <p>{}</p>
+            <p>GST NO: {item.gst_number}</p>
+            <p>Kind Attn: {}</p>
           </div>
         </div>
 
         <div className="space-y-5 px-2">
           <div className="font-semibold">
-            <p>Quotation ID: {fetchedData?.quoteId}</p>
-            <p>Date: {fetchedData?.date}</p>
+            <p>Quotation ID: {item.id}</p>
+            <p>Date: {item.dc_date}</p>
           </div>
 
           <div className="flex space-x-20 pb-9">
-            <p>Ref NO: {fetchedData?.refNo}</p>
+            <p>Ref NO: {}</p>
             <p className="font-semibold">EMAIL</p>
           </div>
         </div>
       </div>
+       
 
       <div className="min-w-full mx-2 border-x-2 border-b-2 border-black font-semibold">
-        <p>Subject: {fetchedData?.subject}</p>
+        <p>Subject: {}</p>
       </div>
       
 
@@ -118,42 +121,49 @@ const Page = () => {
             </tr>
           </thead>
           <tbody>
-            {fetchedData?.data.map((item, index) => (
-              <tr key={index} className="text-center h-8">
-                <td className="border-2 border-t-0 border-black">{index + 1}</td>
-                <td className="border-2 border-t-0 border-black">{item.name}</td>
-                <td className="border-2 border-t-0 border-black">{item.hsnCode}</td>
-                <td className="border-2 border-t-0 border-black">{item.qty}</td>
-                <td className="border-2 border-t-0 border-black">{item.unit}</td>
-                <td className="border-2 border-t-0 border-black">{item.unitCost}</td>
-                <td className="border-2 border-t-0 border-black">{item.taxableValue}</td>
+          {fetchedData?.data2.map((t, index) => (
+           
+              <tr className="text-center h-8">
+                <td className="border-2 border-t-0 border-black">{}</td>
+                <td className="border-2 border-t-0 border-black">{t.name}</td>
+                <td className="border-2 border-t-0 border-black">{t.hsn}</td>
+                <td className="border-2 border-t-0 border-black">{t.qty}</td>
+                <td className="border-2 border-t-0 border-black">{}</td>
+                <td className="border-2 border-t-0 border-black">{item.umoremarks}</td>
+                <td className="border-2 border-t-0 border-black">{item.remarks}</td>
                 <td className="border-2 border-t-0 border-black">
                   <div className="flex">
-                    <div className="w-1/2">{item.cgstPercent}</div>
-                    <div className="w-1/2">{item.cgstTaxAmt}</div>
+                    <div className="w-1/2">{}</div>
+                    <div className="w-1/2">{}</div>
                   </div>
                 </td>
                 <td className="border-2 border-t-0 border-black">
                   <div className="flex">
-                    <div className="w-1/2">{item.sgstPercent}</div>
-                    <div className="w-1/2">{item.sgstTaxAmt}</div>
+                    <div className="w-1/2">{}</div>
+                    <div className="w-1/2">{}</div>
                   </div>
                 </td>
               </tr>
-            ))}
+               ))}
+           
           </tbody>
           <tfoot>
             <tr>
               <td className="text-right font-bold">Total Items:</td>
-              <td>{fetchedData?.length}</td>
+              <td>{}</td>
               <td className="text-right font-bold">Total Unit Cost:</td>
-              <td>{fetchedData?.totalUnitCost}</td>
+              <td>{}</td>
             </tr>
           </tfoot>
         </table>
       </div>
+      
     </div>
+     ))}
+    </div>
+   
+ 
   );
 };
 
-export default Page;
+export default page;
