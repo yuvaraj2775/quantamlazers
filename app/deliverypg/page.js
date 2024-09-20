@@ -31,9 +31,7 @@ const page = () => {
       <h1 className="font-bold text-3xl text-center p-5">Generated Quote</h1>
       <div className="min-w-full mx-2 mt-2 border-2 border-black space-y-5">
         <div className="flex space-x-5">
-          <div>
-            <img src="" alt="Product" />
-          </div>
+       
           <div>
             <h2 className="text-yellow-500 font-bold text-xl uppercase">
               Quantum Lasers
@@ -61,22 +59,41 @@ const page = () => {
       <div className="min-w-full grid grid-cols-2 mx-2 border-x-2 border-b-2 border-black">
         <div className="flex justify-start items-end pb-3 border-r-2 border-black px-2 font-semibold">
           <div>
-            <p>{}</p>
+            <p>{item.buyer}</p>
             <p>GST NO: {item.gst_number}</p>
-            <p>Kind Attn: {}</p>
           </div>
         </div>
 
         <div className="space-y-5 px-2">
-          <div className="font-semibold">
-            <p>Quotation ID: {item.id}</p>
-            <p>Date: {item.dc_date}</p>
-          </div>
-
-          <div className="flex space-x-20 pb-9">
-            <p>Ref NO: {}</p>
-            <p className="font-semibold">EMAIL</p>
-          </div>
+           <div>
+            <h1>dc details</h1>
+           </div>
+           <div>
+            <div>
+              <label htmlFor="">dc no</label>
+              <p>{}</p>
+            </div>
+            <div>
+              <label htmlFor="">your order number</label>
+              <p></p>
+            </div>
+            <div>
+              <label htmlFor="">date</label>
+              <p></p>
+            </div>
+            <div>
+              <label htmlFor="">dc no</label>
+              <p></p>
+            </div>
+            <div>
+              <label htmlFor="">date</label>
+              <p></p>
+            </div>
+            <div>
+              <label htmlFor="">your dc number</label>
+              <p></p>
+            </div>
+           </div>
         </div>
       </div>
        
@@ -101,23 +118,8 @@ const page = () => {
               </th>
               <th className="border-2 border-t-0 border-black">HSN code</th>
               <th className="border-2 border-t-0 border-black">Qty</th>
-              <th className="border-2 border-t-0 border-black">Unit</th>
-              <th className="border-2 border-t-0 border-black">Unit Cost</th>
-              <th className="border-2 border-t-0 border-black">Taxable value</th>
-              <th className="border-2 border-t-0 border-black w-32">
-                CGST/IGST
-                <div className="flex">
-                  <th className="border-t-2 border-r-2 border-black w-1/2">%</th>
-                  <th className="border-t-2 border-black w-1/2">Tax Amt</th>
-                </div>
-              </th>
-              <th className="border-2 border-t-0 border-black w-32">
-                SGST/UGST
-                <div className="flex">
-                  <th className="border-t-2 border-r-2 border-black w-1/2">%</th>
-                  <th className="border-t-2 border-black w-1/2">Tax Amt</th>
-                </div>
-              </th>
+              <th className="border-2 border-t-0 border-black">umo</th>
+              <th className="border-2 border-t-0 border-black">Remarks</th>
             </tr>
           </thead>
           <tbody>
@@ -128,33 +130,13 @@ const page = () => {
                 <td className="border-2 border-t-0 border-black">{t.name}</td>
                 <td className="border-2 border-t-0 border-black">{t.hsn}</td>
                 <td className="border-2 border-t-0 border-black">{t.qty}</td>
-                <td className="border-2 border-t-0 border-black">{}</td>
                 <td className="border-2 border-t-0 border-black">{item.umoremarks}</td>
                 <td className="border-2 border-t-0 border-black">{item.remarks}</td>
-                <td className="border-2 border-t-0 border-black">
-                  <div className="flex">
-                    <div className="w-1/2">{}</div>
-                    <div className="w-1/2">{}</div>
-                  </div>
-                </td>
-                <td className="border-2 border-t-0 border-black">
-                  <div className="flex">
-                    <div className="w-1/2">{}</div>
-                    <div className="w-1/2">{}</div>
-                  </div>
-                </td>
-              </tr>
+                </tr>         
                ))}
            
           </tbody>
-          <tfoot>
-            <tr>
-              <td className="text-right font-bold">Total Items:</td>
-              <td>{}</td>
-              <td className="text-right font-bold">Total Unit Cost:</td>
-              <td>{}</td>
-            </tr>
-          </tfoot>
+         
         </table>
       </div>
       

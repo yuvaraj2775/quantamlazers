@@ -27,12 +27,13 @@ async function initDb() {
     await db.run(`
       CREATE TABLE IF NOT EXISTS quotation (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        quotation_id INTEGER
         buyer TEXT,
         dc_date DATE,
         vehicle_number TEXT,
         gst_number TEXT,
-        dc_number TEXT,
-        dc_issue_date DATE,
+        dc_number INT,
+        dc_issue_date TEXT,
        
 
       )
@@ -96,7 +97,7 @@ export async function POST(req) {
 
     
     const insertQuotationSql = `
-      INSERT INTO quotation (buyer, dc_date, vehicle_number, gst_number, dc_number, dc_issue_date)
+      INSERT INTO quotation ( buyer, dc_date, vehicle_number, gst_number, dc_number, dc_issue_date)
       VALUES (?, ?, ?, ?, ?, ?);
     `;
     const result = await db.run(insertQuotationSql, [
@@ -171,44 +172,6 @@ export async function GET(request) {
     // If you want to return the data regardless of quotation_id
     return NextResponse.json({ data, data2 });
 
-    // Alternatively, if you still want to keep the existing logic:
-    if (quotation_id) {
-      const quotation = await db.get(
-        `SELECT * FROM quotation WHERE id = ?`, 
-        [quotation_id]
-      );
-
-      if (!quotation) {
-        return new Response(JSON.stringify({ error: "Quotation not found" }), {
-          headers: { "Content-Type": "application/json" },
-          status: 404,
-        });
-      }
-
-      const items = await db.all(
-        `SELECT * FROM items WHERE quotation_id = ?`, 
-        [quotation_id]
-      );
-
-      const result = { ...quotation, items, data, data2 };
-      return new Response(JSON.stringify(result), {
-        headers: { "Content-Type": "application/json" },
-        status: 200,
-      });
-    } else {
-      const quotations = await db.all(`SELECT * FROM quotation`);
-      const allItems = await db.all(`SELECT * FROM items`);
-
-      const result = quotations.map((q) => ({
-        ...q,
-        items: allItems.filter((i) => i.quotation_id === q.id),
-      }));
-
-      return new Response(JSON.stringify({ result, data, data2 }), {
-        headers: { "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
   } catch (error) {
     console.error("Error retrieving data:", error);
     return new Response(
@@ -225,6 +188,60 @@ export async function GET(request) {
     }
   }
 }
+export async function PUT(req) {
+  let db;
+  try {
+    const data = await req.json();
+    console.log("Received data:", data); // Log received data
 
+    const { quotation_id, ...formData } = data;
 
+    db = await opendb(); // Open the database
 
+    // Update the quotation record
+    const updateQuotationSql = `
+    UPDATE quotation
+    SET buyer = ?, dc_date = ?, vehicle_number = ?, gst_number = ?, dc_number = ?, dc_issue_date = ?
+    WHERE id = ?;
+`;
+
+await db.run(updateQuotationSql, [
+  formData.buyer,
+  formData.dc_date,
+  formData.vehicle_number,
+  formData.gst_number,
+  formData.dc_number,
+  formData.dc_issue_date,
+  quotation_id, // This should come from the request body
+]);
+
+    // Delete existing items associated with this quotation_id
+    await db.run(`DELETE FROM items WHERE quotation_id = ?`, [quotation_id]);
+    console.log("helo",updateQuotationSql)
+
+    const insertItemSql = `
+      INSERT INTO items (quotation_id, name, hsn, qty, umoremarks, remarks)
+      VALUES (?, ?, ?, ?, ?, ?);
+    `;
+
+    for (const item of formData.items) {
+      await db.run(insertItemSql, [
+        quotation_id,
+        item.name,
+        item.hsn,
+        item.qty,
+        item.umoremarks,
+        item.remarks,
+      ]);
+    }
+
+    return NextResponse.json({ message: "Data updated successfully" });
+  } catch (error) {
+    console.error("Error during update operation:", error);
+    return NextResponse.json({ error: "Database error: " + error.message }, { status: 500 });
+  } finally {
+    if (db) {
+      await db.close(); // Ensure the database connection is closed
+    }
+  }
+}
