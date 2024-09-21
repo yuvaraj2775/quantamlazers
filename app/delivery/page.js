@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import swal from 'sweetalert';
+import { PlusIcon} from '@heroicons/react/24/solid'
 
 
 export default function Page() {
@@ -83,10 +84,7 @@ export default function Page() {
   }, []);
 
     function handlechange(){
-      {fetchedData?.data.map((item) => (
-       
-          swal(`Your quotation ID is ${item.id + 1}`)
-         ))}
+     
   }
 
   
@@ -136,6 +134,11 @@ export default function Page() {
     } catch (error) {
       console.error("Request failed:", error);
     }
+    {fetchedData?.data.map((item) => (
+       
+      swal(`Your quotation ID is ${item.id + 1}`)
+     ))}
+     router.push("/viewpg")
   };
 
   const handlefetch = async () => {
@@ -154,23 +157,32 @@ export default function Page() {
   const router = useRouter();
   const handleClick = () => {
     router.push("/deliverypg");
+    
   };
+ 
+  const  handlechande = () => {
+  
+  
+  };
+
 
   return (
     <form onSubmit={handleSubmit}>
       <div className="h-screen w-full p-4">
      
         <h1 className="text-center mt-5 font-bold text-xl">DC Form</h1>
+      
 
         <div className="grid grid-cols-2 gap-4">
           <div className="capitalize">
             <label htmlFor="Buyer">Buyer</label>
             <input
               type="text"
-              className="border-2 rounded h-10 w-full"
+              className="border-2 rounded h-10 w-full "
               name="Buyer"
               value={inputData.Buyer}
               onChange={handleInputChange}
+              required
             />
           </div>
 
@@ -191,17 +203,18 @@ export default function Page() {
           <div>
             <label htmlFor="vehiclenumber">Vehicle Number</label>
             <input
-              type="text"
+              type="number"
               name="vehiclenumber"
               value={inputData.vehiclenumber}
               onChange={handleInputChange}
               className="h-10 w-full rounded border-2"
+              required
             />
           </div>
           <div>
             <label htmlFor="gstnumber">GST Number</label>
             <input
-              type="text"
+              type="number"
               name="gstnumber"
               value={inputData.gstnumber}
               onChange={handleInputChange}
@@ -211,7 +224,7 @@ export default function Page() {
           <div>
             <label htmlFor="dcnumber">DC Number</label>
             <input
-              type="text"
+              type="number"
               name="dcnumber"
               value={inputData.dcnumber}
               onChange={handleInputChange}
@@ -221,7 +234,7 @@ export default function Page() {
           <div>
             <label htmlFor="dcdate">DC Date</label>
             <input
-              type="text"
+              type="date"
               name="dcdate"
               value={inputData.dcdate}
               onChange={handleInputChange}
@@ -313,9 +326,9 @@ export default function Page() {
                   <button
                     type="button"
                     onClick={handleAddRow}
-                    className="text-green-500 ml-5"
+                    className="p-2 rounded-full border-2"
                   >
-                    Add
+                    <PlusIcon className="w-4 h-4 text-green-500" />
                   </button>
                 </td>
               </tr>
@@ -334,26 +347,26 @@ export default function Page() {
           <button 
             type="submit"
             className="text-center cursor-pointer border-2 p-2 w-24 rounded-md bg-green-500 text-white"
-            onClick={handlechange}
+            onClick={handleSubmit}
           >
-            Save
+            View page
           </button>
          
-          <button
+          {/* <button
             type="button"
-            onClick={handlefetch}
+            onClick={handlechande}
             oncl
             className="text-center cursor-pointer border-2 p-2 w-24 rounded-md bg-green-500 text-white"
           >
             view
-          </button>
-          <button
+          </button> */}
+          {/* <button
             type="button"
             onClick={handleClick}
             className="text-center cursor-pointer border-2 p-2 w-24 rounded-md bg-blue-500 text-white"
           >
             Go to Delivery
-          </button>
+          </button> */}
         </div>
       </div>
     </form>

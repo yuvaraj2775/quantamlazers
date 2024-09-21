@@ -25,7 +25,7 @@ async function initDb() {
     const db = await opendb();
 
     await db.run(`
-      CREATE TABLE IF NOT EXISTS quotation (
+      CREATE TABLE IF NOT EXISTS dcform (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         quotation_id INTEGER
         buyer TEXT,
@@ -34,16 +34,14 @@ async function initDb() {
         gst_number TEXT,
         dc_number INT,
         dc_issue_date TEXT,
-       
-
       )
     `);
-    console.log("Created 'quotation' table");
+    console.log("Created 'dcform' table");
 
     await db.run(`
       CREATE TABLE IF NOT EXISTS items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        quotation_id INTEGER,
+        quotation_id INTEGER  REFERENCE  quotation(id),
         name TEXT,
         hsn TEXT,
         qty INTEGER,

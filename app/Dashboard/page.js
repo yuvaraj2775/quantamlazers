@@ -6,41 +6,34 @@ import {
   DocumentDuplicateIcon,
 } from "@heroicons/react/24/solid";
 
-
 export default function Dashboard() {
   return (
-    <>
-      <nav className="bg-gray-200  h-screen p-4">
-        <div className="">
-          <div className="text-gray-800  text-xl font-bold">
-            <Link href="/">
-              <p>Quantum Lazers</p>
-            </Link>
+    <nav className="bg-gradient-to-r from-blue-100/60 to-slate-50 h-screen p-6 shadow-lg">
+      <div className="text-gray-800 text-2xl font-bold mb-10">
+        Quantum Lazers
+      </div>
+      <div className="space-y-6">
+        <Link href="/Search">
+          <div className="flex items-center p-2 rounded-lg hover:bg-blue-200 transition-colors">
+            <MagnifyingGlassIcon className="w-5 h-5 text-slate-600 mr-3" />
+            <p className="text-slate-600 text-lg font-semibold">Search</p>
           </div>
-          <div className="space-x-4  mt-10">
-            <Link href="/Search">
-              <div className="flex items-center">
-                <MagnifyingGlassIcon className="w-4 h-4 mr-1" />
-                <p className="text-gray-800 hover:text-blue-500">Search</p>
-              </div>
-            </Link>
+        </Link>
 
-            <Link href="/Quatation">
-              <div className="flex items-center">
-                <TableCellsIcon className="w-4 h-4 mr-1" />
-                <p className="text-gray-800 hover:text-blue-500">Quotation</p>
-              </div>
-            </Link>
-
-            <Link href="/delivery">
-              <div className="flex items-center">
-                <DocumentDuplicateIcon className="w-4 h-4 mr-1" />
-                <p className="text-gray-800 hover:text-blue-500">DC Challan</p>
-              </div>
-            </Link>
+        <Link href="/Quotation">
+          <div className="flex items-center p-2 rounded-lg hover:bg-blue-200 transition-colors">
+            <TableCellsIcon className="w-5 h-5 text-slate-600 mr-3" />
+            <p className="text-slate-600 text-lg font-semibold">Quotation</p>
           </div>
-        </div>
-      </nav>
-    </>
+        </Link>
+
+        <Link href="/delivery">
+          <div className="flex items-center p-2 rounded-lg hover:bg-blue-200 transition-colors">
+            <DocumentDuplicateIcon className="w-5 h-5 text-slate-600 mr-3" />
+            <p className="text-slate-600 text-lg font-semibold">DC Challan</p>
+          </div>
+        </Link>
+      </div>
+    </nav>
   );
 }
