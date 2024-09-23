@@ -11,6 +11,8 @@ export default function Page() {
     gst_number: "",
     dc_number: "",
     dc_issue_date: "",
+    ordernumber:"",
+    orderdate:"",
     items: [],
   });
 
@@ -93,16 +95,16 @@ export default function Page() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="h-screen p-6 overflow-y-auto bg-gray-50">
-      <h1 className="text-center mt-5 font-bold text-2xl text-gray-800">DC Form</h1>
-      <h1 className="text-right font-semibold text-gray-600">DC NO: {formData.dc_number}</h1>
+    <form onSubmit={handleSubmit} className="h-screen capitalize p-6 overflow-y-auto bg-gray-50">
+      <h1 className="text-center mt-5 font-bold text-2xl text-gray-800">Edit page</h1>
+      <h1 className="text-right font-semibold text-gray-600">DC NO: <span className="text-red-900">{formData.id}</span> </h1>
 
       <div className="grid grid-cols-2 gap-4 mt-5">
         <div className="capitalize">
-          <label htmlFor="buyer" className="text-sm font-semibold text-gray-700">Buyer</label>
-          <input
+          <label htmlFor="buyer" className="text-sm font-semibold ">Buyer</label>
+          <textarea
             type="text"
-            className="border-2 rounded h-10 w-full px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+            className="border-2 mt-1  rounded capitalize w-full h-[175px] px-2 -pt-10 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             name="buyer"
             value={formData.buyer || ""}
             onChange={handleInputChange}
@@ -110,153 +112,183 @@ export default function Page() {
         </div>
 
         <div className="capitalize">
-          <label htmlFor="dc_date" className="text-sm font-semibold text-gray-700">DC Date</label>
+         <div>
+         <label htmlFor="dc_date" className="text-sm font-semibold ">DC Date</label>
           <input
             type="date"
-            className="border-2 h-10 rounded w-full px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+            className="border-2 mt-1 h-10 rounded w-full px-2 shadow-sm  focus:outline-none focus:ring focus:ring-blue-300"
             name="dc_date"
             value={formData.dc_date || ""}
             onChange={handleInputChange}
           />
+         </div>
+         <div>
+         <div>
+         <label htmlFor="dc_date" className="text-sm font-semibold ">your order number</label>
+          <input
+            type="number"
+            className="border-2 mt-1 h-10 rounded w-full px-2 shadow-sm  focus:outline-none focus:ring focus:ring-blue-300"
+            name="ordernumber"
+            value={formData.ordernumber || ""}
+            onChange={handleInputChange}
+          />
+         </div>
+         <div>
+         <label htmlFor="dc_date" className="text-sm font-semibold ">your order date</label>
+          <input
+            type="date"
+            className="border-2 h-10 rounded mt-1 w-full  px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+            name="orderdate"
+            value={formData.orderdate || ""}
+            onChange={handleInputChange}
+          />
+         </div> 
+
+         </div>
         </div>
       </div>
 
       <div className="grid grid-cols-4 gap-4 mt-4">
         <div>
-          <label htmlFor="vehicle_number" className="text-sm font-semibold text-gray-700">Vehicle Number</label>
+          <label htmlFor="vehicle_number" className="text-sm font-semibold  ">Vehicle Number</label>
           <input
             type="text"
             name="vehicle_number"
             value={formData.vehicle_number || ""}
             onChange={handleInputChange}
-            className="h-10 w-full border-2 px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+            className="h-10 w-full border-2 px-2 mt-1 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
           />
         </div>
         <div>
-          <label htmlFor="gst_number" className="text-sm font-semibold text-gray-700">GST Number</label>
+          <label htmlFor="gst_number" className="text-sm font-semibold ">GST Number</label>
           <input
             type="text"
             name="gst_number"
             value={formData.gst_number || ""}
             onChange={handleInputChange}
-            className="h-10 w-full border-2 px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+            className="h-10 w-full border-2 mt-1 px-2 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
           />
         </div>
         <div>
-          <label htmlFor="dc_number" className="text-sm font-semibold text-gray-700">DC Number</label>
+          <label htmlFor="dc_number" className="text-sm font-semibold  ">DC Number</label>
           <input
             type="text"
             name="dc_number"
             value={formData.dc_number || ""}
             onChange={handleInputChange}
-            className="h-10 w-full border-2 px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+            className="h-10 w-full border-2 px-2 mt-1 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
           />
         </div>
         <div>
-          <label htmlFor="dc_issue_date" className="text-sm font-semibold text-gray-700">DC Issue Date</label>
+          <label htmlFor="dc_issue_date" className="text-sm font-semibold ">DC  Date</label>
           <input
             type="date"
             name="dc_issue_date"
             value={formData.dc_issue_date || ""}
             onChange={handleInputChange}
-            className="h-10 w-full border-2 px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+            className="h-10 w-full border-2 mt-1 px-2 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
           />
         </div>
       </div>
 
       <div className="border-2 border-gray-300 mt-5 rounded-lg overflow-hidden shadow-sm">
   <table className="w-full">
-    <thead className="bg-gray-200">
-      <tr>
-        <th className="p-2">Sl. No</th>
-        <th className="p-2">Item Name / Description</th>
-        <th className="p-2">HSN Code</th>
-        <th className="p-2">Qty</th>
-        <th className="p-2">UMO</th>
-        <th className="p-2">Remarks</th>
-        <th className="p-2">Actions</th>
+    <thead className="bg-gray-200 font-semibold">
+      <tr className="font-normal">
+        <th className="p-2 border-2 border-r-gray-300">Sl. No</th>
+        <th className="p-2 border-2 border-r-gray-300">Item Name / Description</th>
+        <th className="p-2 border-2 border-r-gray-300">HSN Code</th>
+        <th className="p-2 border-2 border-r-gray-300 ">Qty</th>
+        <th className="p-2 border-2 border-r-gray-300">UMO</th>
+        <th className="p-2 border-2 border-r-gray-300">Remarks</th>
+        <th className="p-2 ">Actions</th>
       </tr>
     </thead>
     <tbody>
       {formData.items.map((item, i) => (
         <tr key={i} className="border-b">
-          <td className="p-2">{i + 1}</td>
-          <td>
+          <td className="p-2  border-2 border-r-gray-300 ">{i + 1}</td>
+          <td className="border-r-gray-300 border-2 px-2">
             <input
               type="text"
               name="name"
               value={item.name}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="Name"
-              className="w-full border rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border border-r-gray-300 capitalize rounded p-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
-          <td>
+          <td className="border-r-gray-300 border-2 px-2">
             <input
               type="text"
               name="hsn"
               value={item.hsn}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="HSN"
-              className="w-full border rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
-          <td>
+          <td className="border-r-gray-300 border-2 px-2">
             <input
               type="number"
               name="qty"
               value={item.qty}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="Qty"
-              className="w-full border rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full text-right border rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
-          <td>
+          <td className="border-r-gray-300 border-2 px-2">
             <input
               type="text"
               name="umoremarks"
               value={item.umoremarks}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="UMO"
-              className="w-full border rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
-          <td>
+          <td className="border-r-gray-300 border-2 px-2">
             <input
               type="text"
               name="remarks"
               value={item.remarks}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="Remarks"
-              className="w-full border rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
-          <td className="flex justify-center items-center space-x-2 p-2">
+          <td className="flex justify-center items-center border-b-2 border-gray-300 space-x-2 p-2">
             <button
               type="button"
               onClick={handleAddRow}
-              className="flex items-center justify-center w-8 h-8 text-green-500 bg-green-100 rounded-full hover:bg-green-200 transition"
+              className="flex items-center justify-center w-8 h-8 text-green-700 bg-green-100 rounded-full hover:bg-green-200 transition"
               title="Add Row"
             >
-              <PlusIcon className="w-4 h-4" />
+              <PlusIcon className="w-5 h-5" />
             </button>
             <button
               type="button"
               onClick={() => handleDeleteRow(i)}
-              className="flex items-center justify-center w-8 h-8 text-red-500 bg-red-100 rounded-full hover:bg-red-200 transition"
+              className="flex items-center justify-center w-8 h-8 text-red-900 bg-red-100 rounded-full hover:bg-red-200 transition"
               title="Delete Row"
             >
-              <XMarkIcon className="w-4 h-4" />
+              <XMarkIcon className="w-5 h-5" />
             </button>
           </td>
         </tr>
       ))}
     </tbody>
   </table>
-  <p className="font-bold mt-2 text-center">
+  <div className="flex justify-evenly w-3/4">
+      <p className="font-bold mt-2 ">
     Total Number of Qty:{" "}
-    {formData.items.reduce((acc, item) => acc + Number(item.qty || 0), 0)}
+    
   </p>
+  <span className="-ml-16 font-bold mt-2"> {formData.items.reduce((acc, item) => acc + Number(item.qty || 0), 0)}</span>
+
+  </div>
+
 </div>
 
 

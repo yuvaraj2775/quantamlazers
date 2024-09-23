@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import React from "react";
+import { PlusIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 const page = () => {
   const [fetchedData, setFetchedData] = useState(null);
@@ -57,40 +58,40 @@ const page = () => {
       <div className="min-w-full h-12 max-w-full mx-2 border-x-2 border-b-2 border-black"></div>
 
       <div className="min-w-full grid grid-cols-2 mx-2 border-x-2 border-b-2 border-black">
-        <div className="flex justify-start items-end pb-3 border-r-2 border-black px-2 font-semibold">
+        <div className="flex justify-start  pb-3 border-r-2 border-black px-2 font-semibold">
           <div>
             <p>{item.buyer}</p>
             <p>GST NO: {item.gst_number}</p>
           </div>
         </div>
 
-        <div className="space-y-5 px-2">
+        <div className="space-y-5 px-2 capitalize">
            <div>
-            <h1>dc details</h1>
+            <h1 className="font-semibold">dc details</h1>
            </div>
            <div>
             <div>
-              <label htmlFor="">dc no</label>
+              <label htmlFor="">dc no {item.dcnumber}</label>
               <p>{}</p>
             </div>
             <div>
-              <label htmlFor="">your order number</label>
+              <label htmlFor="">your order number{item.ordernumber}</label>
               <p></p>
             </div>
             <div>
-              <label htmlFor="">date</label>
+              <label htmlFor="">date: {item.dc_date}</label>
               <p></p>
             </div>
             <div>
-              <label htmlFor="">dc no</label>
+              <label htmlFor=""> your dc no:{item.dc_number} </label>
               <p></p>
             </div>
             <div>
-              <label htmlFor="">date</label>
+              <label htmlFor="">date:{item.orderdate}</label>
               <p></p>
             </div>
             <div>
-              <label htmlFor="">your dc number</label>
+              <label htmlFor="">your dc number :{item.ordernumber}</label>
               <p></p>
             </div>
            </div>
@@ -98,14 +99,12 @@ const page = () => {
       </div>
        
 
-      <div className="min-w-full mx-2 border-x-2 border-b-2 border-black font-semibold">
-        <p>Subject: {}</p>
+      <div className="min-w-full mx-2 border-x-2 mt-5 border-b-2 border-black font-semibold">
+        <p></p>
       </div>
       
 
-      <div className="min-w-full mx-2 border-x-2 border-b-2 border-black pt-3">
-        <p>We are pleased to submit the following quote as requested</p>
-      </div>
+     
       
 
       <div>
@@ -126,12 +125,12 @@ const page = () => {
           {fetchedData?.data2.map((t, index) => (
            
               <tr className="text-center h-8">
-                <td className="border-2 border-t-0 border-black">{}</td>
+                <td className="border-2 border-t-0 border-black">{index + 1}</td>
                 <td className="border-2 border-t-0 border-black">{t.name}</td>
                 <td className="border-2 border-t-0 border-black">{t.hsn}</td>
                 <td className="border-2 border-t-0 border-black">{t.qty}</td>
-                <td className="border-2 border-t-0 border-black">{item.umoremarks}</td>
-                <td className="border-2 border-t-0 border-black">{item.remarks}</td>
+                <td className="border-2 border-t-0 border-black">{t.umoremarks}</td>
+                <td className="border-2 border-t-0 border-black">{t.remarks}</td>
                 </tr>         
                ))}
            

@@ -6,9 +6,9 @@ import {
   DocumentDuplicateIcon,
 } from "@heroicons/react/24/solid";
 
-export default function Dashboard() {
+export default function  Dashboard() {
   return (
-    <nav className="bg-gradient-to-r from-blue-100/60 to-slate-50 h-screen p-6 shadow-lg">
+    <nav className="bg-gradient-to-r from-blue-100/60 to-slate-50 h-screen p-6 shadow-lg border-2 border-r-gray-600">
       <div className="text-gray-800 text-2xl font-bold mb-10">
         Quantum Lazers
       </div>

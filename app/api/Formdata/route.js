@@ -25,7 +25,7 @@ async function initDb() {
     const db = await opendb();
 
     await db.run(`
-      CREATE TABLE IF NOT EXISTS dcform (
+      CREATE TABLE IF NOT EXISTS quotation (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         quotation_id INTEGER
         buyer TEXT,
@@ -34,9 +34,11 @@ async function initDb() {
         gst_number TEXT,
         dc_number INT,
         dc_issue_date TEXT,
+        ordernumber TEXT,
+        orderdate DATE,
       )
     `);
-    console.log("Created 'dcform' table");
+    console.log("Created 'quotation' table");
 
     await db.run(`
       CREATE TABLE IF NOT EXISTS items (
@@ -71,6 +73,8 @@ export async function POST(req) {
       gstnumber,
       dcnumber,
       dcdate,
+      ordernumber,
+      orderdate,
       items,
      
     } = data;
@@ -82,6 +86,8 @@ export async function POST(req) {
       !gstnumber ||
       !dcnumber ||
       !dcdate ||
+      !ordernumber ||
+      !orderdate ||
       !items 
       
     ) {
@@ -95,8 +101,8 @@ export async function POST(req) {
 
     
     const insertQuotationSql = `
-      INSERT INTO quotation ( buyer, dc_date, vehicle_number, gst_number, dc_number, dc_issue_date)
-      VALUES (?, ?, ?, ?, ?, ?);
+      INSERT INTO quotation ( buyer, dc_date, vehicle_number, gst_number, dc_number, dc_issue_date, ordernumber,orderdate)
+      VALUES (?, ?, ?, ?, ?, ?,?,?);
     `;
     const result = await db.run(insertQuotationSql, [
       Buyer,
@@ -104,7 +110,9 @@ export async function POST(req) {
       vehiclenumber,
       gstnumber,
       dcnumber,
-      dcdate
+      dcdate,
+      ordernumber,
+      orderdate
     ]);
     
 
@@ -199,7 +207,7 @@ export async function PUT(req) {
     // Update the quotation record
     const updateQuotationSql = `
     UPDATE quotation
-    SET buyer = ?, dc_date = ?, vehicle_number = ?, gst_number = ?, dc_number = ?, dc_issue_date = ?
+    SET buyer = ?, dc_date = ?, vehicle_number = ?, gst_number = ?, dc_number = ?, dc_issue_date = ?, ordernumber=?,orderdate=?
     WHERE id = ?;
 `;
 
@@ -210,6 +218,8 @@ await db.run(updateQuotationSql, [
   formData.gst_number,
   formData.dc_number,
   formData.dc_issue_date,
+ formData.ordernumber,
+  formData.orderdate,
   quotation_id, // This should come from the request body
 ]);
 
