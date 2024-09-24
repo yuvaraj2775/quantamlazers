@@ -113,15 +113,16 @@ export default function Page() {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="h-screen overflow-y-auto w-full p-6 bg-gray-50">
+      <div className="h-screen overflow-y-auto w-full p-6  bg-gray-50">
         <h1 className="text-center mt-5 font-bold text-xl">DC Form</h1>
+        <h1  className="text-right mt-5 font-bold text-blue-700 ">DC NO : <span className="text-red-900">Draft</span> </h1>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="capitalize">
             <label htmlFor="Buyer" className="text-sm font-semibold">Buyer</label>
             <textarea
               type="text"
-              className="border-2 rounded mt-1 capitalize w-full h-[175px] px-2 -pt-10 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="border-2 rounded mt-1 uppercase  w-full h-[175px] px-2 -pt-10 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
               name="Buyer"
               value={inputData.Buyer}
               onChange={handleInputChange}
@@ -163,32 +164,32 @@ export default function Page() {
           <div>
             <label htmlFor="vehiclenumber" className="text-sm font-semibold">Vehicle Number</label>
             <input
-              type="number"
+              type="text"
               name="vehiclenumber"
               value={inputData.vehiclenumber}
               onChange={handleInputChange}
-              className="h-10 w-full border-2 mt-1 rounded px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="h-10 w-full uppercase border-2 mt-1 rounded px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
               required
             />
           </div>
           <div>
             <label htmlFor="gstnumber" className="text-sm font-semibold">GST Number</label>
             <input
-              type="number"
+              type="text"
               name="gstnumber"
               value={inputData.gstnumber}
               onChange={handleInputChange}
-              className="h-10 w-full border-2 rounded px-2 mt-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="h-10 w-full uppercase border-2 rounded px-2 mt-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </div>
           <div>
             <label htmlFor="dcnumber" className="text-sm font-semibold">DC Number</label>
             <input
-              type="number"
+              type="text"
               name="dcnumber"
               value={inputData.dcnumber}
               onChange={handleInputChange}
-              className="h-10 w-full border-2 rounded px-2 mt-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="h-10 w-full border-2 uppercase rounded px-2 mt-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </div>
           <div>
@@ -227,7 +228,7 @@ export default function Page() {
               value={item.name}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="Name"
-              className="w-full border border-r-gray-300 capitalize rounded p-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border uppercase border-r-gray-300  rounded p-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
           <td className="border-r-gray-300 border-2 px-2">
@@ -237,7 +238,7 @@ export default function Page() {
               value={item.hsn}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="HSN"
-              className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border uppercase rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
           <td className="border-r-gray-300 border-2 px-2">
@@ -257,7 +258,7 @@ export default function Page() {
               value={item.umoremarks}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="UMO"
-              className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border uppercase rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
           <td className="border-r-gray-300 border-2 px-2">
@@ -267,7 +268,7 @@ export default function Page() {
               value={item.remarks}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="Remarks"
-              className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border uppercase rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
           <td className="flex justify-center items-center border-b-2 border-gray-300 space-x-2 p-2">
@@ -290,6 +291,7 @@ export default function Page() {
           </td>
         </tr>
       ))}
+     
        <button
               type="button"
               onClick={handleAddRow}

@@ -96,15 +96,15 @@ export default function Page() {
 
   return (
     <form onSubmit={handleSubmit} className="h-screen capitalize p-6 overflow-y-auto bg-gray-50">
-      <h1 className="text-center mt-5 font-bold text-2xl text-gray-800">Edit page</h1>
-      <h1 className="text-right font-semibold text-gray-600">DC NO: <span className="text-red-900">{formData.id}</span> </h1>
+      <h1 className="text-center mt-5 font-bold text-xl text-gray-800">Edit page</h1>
+      <h1 className="text-right font-bold text-blue-600">DC NO: <span className="text-red-900">{formData.id}</span> </h1>
 
       <div className="grid grid-cols-2 gap-4 mt-5">
         <div className="capitalize">
           <label htmlFor="buyer" className="text-sm font-semibold ">Buyer</label>
           <textarea
             type="text"
-            className="border-2 mt-1  rounded capitalize w-full h-[175px] px-2 -pt-10 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+            className="border-2 mt-1  rounded uppercase w-full h-[175px] px-2 -pt-10 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             name="buyer"
             value={formData.buyer || ""}
             onChange={handleInputChange}
@@ -156,7 +156,7 @@ export default function Page() {
             name="vehicle_number"
             value={formData.vehicle_number || ""}
             onChange={handleInputChange}
-            className="h-10 w-full border-2 px-2 mt-1 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
+            className="h-10 w-full border-2 uppercase px-2 mt-1 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
           />
         </div>
         <div>
@@ -166,7 +166,7 @@ export default function Page() {
             name="gst_number"
             value={formData.gst_number || ""}
             onChange={handleInputChange}
-            className="h-10 w-full border-2 mt-1 px-2 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
+            className="h-10 w-full border-2 uppercase mt-1 px-2 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
           />
         </div>
         <div>
@@ -176,7 +176,7 @@ export default function Page() {
             name="dc_number"
             value={formData.dc_number || ""}
             onChange={handleInputChange}
-            className="h-10 w-full border-2 px-2 mt-1 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
+            className="h-10 w-full border-2 uppercase px-2 mt-1 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
           />
         </div>
         <div>
@@ -215,7 +215,7 @@ export default function Page() {
               value={item.name}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="Name"
-              className="w-full border border-r-gray-300 capitalize rounded p-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border border-r-gray-300 uppercase rounded p-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
           <td className="border-r-gray-300 border-2 px-2">
@@ -225,13 +225,13 @@ export default function Page() {
               value={item.hsn}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="HSN"
-              className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border uppercase rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
           <td className="border-r-gray-300 border-2 px-2">
             <input
               type="number"
-              name="qty"
+              name="QTY"
               value={item.qty}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="Qty"
@@ -245,7 +245,7 @@ export default function Page() {
               value={item.umoremarks}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="UMO"
-              className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border uppercase rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
           <td className="border-r-gray-300 border-2 px-2">
@@ -255,7 +255,7 @@ export default function Page() {
               value={item.remarks}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="Remarks"
-              className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border uppercase rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
           <td className="flex justify-center items-center border-b-2 border-gray-300 space-x-2 p-2">
