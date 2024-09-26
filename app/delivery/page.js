@@ -75,6 +75,9 @@ export default function Page() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      if (fetchedData?.data.length) {
+        swal(`Your quotation ID is ${fetchedData.data[0].id + 1}`);
+      }
       const response = await fetch("/api/Formdata", {
         method: "POST",
         body: JSON.stringify({ ...inputData, items: formData.items }),
@@ -101,9 +104,7 @@ export default function Page() {
         setFormData({ items: [] });
 
         // Show alert for quotation ID
-        if (fetchedData?.data.length) {
-          swal(`Your quotation ID is ${fetchedData.data[0].id + 1}`);
-        }
+      
         router.push("/viewpg");
       }
     } catch (error) {
@@ -228,7 +229,7 @@ export default function Page() {
               value={item.name}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="Name"
-              className="w-full border uppercase border-r-gray-300  rounded p-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border capitalize border-r-gray-300  rounded p-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
           <td className="border-r-gray-300 border-2 px-2">
@@ -238,7 +239,7 @@ export default function Page() {
               value={item.hsn}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="HSN"
-              className="w-full border uppercase rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
           <td className="border-r-gray-300 border-2 px-2">
@@ -258,7 +259,7 @@ export default function Page() {
               value={item.umoremarks}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="UMO"
-              className="w-full border uppercase rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
           <td className="border-r-gray-300 border-2 px-2">
@@ -268,7 +269,7 @@ export default function Page() {
               value={item.remarks}
               onChange={(e) => handleRowChange(i, e)}
               placeholder="Remarks"
-              className="w-full border uppercase rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+              className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
             />
           </td>
           <td className="flex justify-center items-center border-b-2 border-gray-300 space-x-2 p-2">
