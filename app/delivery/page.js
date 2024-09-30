@@ -1,8 +1,14 @@
 "use client";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import swal from "sweetalert";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+} from "@headlessui/react";
+import { CheckIcon } from "@heroicons/react/24/outline";
 
 export default function Page() {
   const [formData, setFormData] = useState({
@@ -12,11 +18,12 @@ export default function Page() {
         name: "",
         hsn: "",
         qty: "",
-        umoremarks: "",
+        umoremarks: "NOS",
         remarks: "",
       },
     ],
   });
+  const [open, setOpen] = useState(false); 
 
   const [inputData, setInputData] = useState({
     Buyer: "",
@@ -44,7 +51,7 @@ export default function Page() {
           name: "",
           hsn: "",
           qty: "",
-          umoremarks: "",
+          umoremarks: "NOS",
           remarks: "",
         },
       ],
@@ -53,10 +60,24 @@ export default function Page() {
 
   const handleRowChange = (index, e) => {
     const { name, value } = e.target;
-    const newItems = [...formData.items];
-    newItems[index] = { ...newItems[index], [name]: value };
-    setFormData({ items: newItems });
+    const updatedItems = [...formData.items];
+  
+    // Check if the first character is a number or not
+    if (isNaN(value.charAt(0))) {
+      // Capitalize the first letter if it's a text
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [name]: value.charAt(0).toUpperCase() + value.slice(1),
+      };
+    } else {
+      // Keep the value unchanged if it's a number
+      updatedItems[index] = { ...updatedItems[index], [name]: value };
+    }
+  
+    // Update the formData with the modified items
+    setFormData((prev) => ({ ...prev, items: updatedItems }));
   };
+  
 
   const handleDeleteRow = (index) => {
     const newItems = formData.items.filter((_, i) => i !== index);
@@ -88,10 +109,9 @@ export default function Page() {
     e.preventDefault();
     try {
       if (fetchedData?.data.length) {
-        // swal(`Your quotation ID is ${fetchedData.data[0].id + 1}`);
-        <MyModal/>
-      
+        setOpen(true); 
       }
+      
       const response = await fetch("/api/Formdata", {
         method: "POST",
         body: JSON.stringify({ ...inputData, items: formData.items }),
@@ -120,13 +140,19 @@ export default function Page() {
         });
         setFormData({ items: [] });
 
+
         // Show alert for quotation ID
-        router.push("/viewpg");
+     setOpen(true);
+       
+
       }
     } catch (error) {
       console.error("Request failed:", error);
     }
   };
+   const dataed = fetchedData?.data.length ? fetchedData.data[0].id + 1 : null;
+
+ 
 
   return (
     <form onSubmit={handleSubmit}>
@@ -175,7 +201,7 @@ export default function Page() {
                 name="ordernumber"
                 value={inputData.ordernumber}
                 onChange={handleInputChange}
-                className="border-2 h-10 rounded mt-1 w-full px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+                className="border-2 h-10 rounded mt-1 uppercase w-full px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
               />
             </div>
             <div>
@@ -277,7 +303,7 @@ export default function Page() {
                       value={item.name}
                       onChange={(e) => handleRowChange(i, e)}
                       placeholder="Name"
-                      className="w-64 border h-10 capitalize border-r-gray-300 rounded p-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+                      className="w-64 border h-10  border-r-gray-300 rounded p-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
                     />
                   </td>
                   <td className="border-r-gray-300 border-2 px-1">
@@ -287,7 +313,7 @@ export default function Page() {
                       value={item.hsn}
                       onChange={(e) => handleRowChange(i, e)}
                       placeholder="HSN"
-                      className="w-28 border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+                      className="w-28 border   rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
                     />
                   </td>
                   <td className="border-r-gray-300 border-2 px-2">
@@ -299,21 +325,10 @@ export default function Page() {
                       placeholder="Qty"
                       className="w-20 text-right border rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
                     />
-                    {/* <select name="qty" id=""  onChange={(e) => handleRowChange(i, e)}>
-                      <option value="NOS">NOS</option>
-                      <option value="EACH">EACH</option>
-                      <option value="SET">SET</option>
-                    </select> */}
+                   
                   </td>
                   <td className="border-r-gray-300 border-2 px-2">
-                    {/* <input
-                      type="text"
-                      name="umoremarks"
-                      value={item.umoremarks}
-                      onChange={(e) => handleRowChange(i, e)}
-                      placeholder="UMO"
-                      className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                    /> */}
+                  
                       <select name="umoremarks" id=""  value={item.umoremarks}
                       onChange={(e) => handleRowChange(i, e)}>
                       <option value="NOS">NOS</option>
@@ -328,7 +343,7 @@ export default function Page() {
                       value={item.remarks}
                       onChange={(e) => handleRowChange(i, e)}
                       placeholder="Remarks"
-                      className="w-[230px] border h-14 capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+                      className="w-[230px] border h-14  rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
                     />
                   </td>
                   <td className="flex justify-center items-center mt-3  border-gray-300 space-x-2 px-2">
@@ -353,9 +368,9 @@ export default function Page() {
               ))}
             </tbody>
           </table>
-          <div className="flex justify-evenly w-3/4">
+          <div className="flex justify-evenly  w-[70%]">
             <p className="font-bold mt-2">Total Number of Qty: </p>
-            <span className="-ml-16 font-bold mt-2">
+            <span className="  text-right mt-2 inline-block">
               {formData.items.reduce(
                 (acc, item) => acc + Number(item.qty || 0),
                 0
@@ -363,6 +378,8 @@ export default function Page() {
             </span>
           </div>
         </div>
+      
+
 
         <div className="flex justify-center mt-4 gap-4">
           <button
@@ -372,7 +389,60 @@ export default function Page() {
             Save
           </button>
         </div>
+        <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        className="relative "
+      >
+        <DialogBackdrop className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <DialogPanel className="relative transform overflow-hidden rounded-lg w-1/3 h-1/3 bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all">
+              <div>
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                  <CheckIcon
+                    aria-hidden="true"
+                    className="h-6 w-6 text-green-600"
+                  />
+                </div>
+                <div className="mt-3 text-center sm:mt-5">
+                  <DialogTitle
+                    as="h3"
+                    className="text-base font-semibold leading-6 text-gray-900"
+                  >
+                    DC challan number {dataed}
+                   
+
+                  </DialogTitle>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                     saved successfully!
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 sm:mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    router.push("/deliverypg"); // Navigate to another page
+                  }}
+                  className="inline-flex w-full justify-center  "
+                >
+                  <span className=" bg-indigo-600 px-3 py-2  text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 rounded-md">
+                  Done
+                  </span>
+              
+                </button>
+              </div>
+            </DialogPanel>
+          </div>
+        </div>
+      </Dialog>
+
       </div>
+     
     </form>
   );
 }

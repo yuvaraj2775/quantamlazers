@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { PlusIcon } from "@heroicons/react/24/solid";
+import {ArrowLeftIcon , PrinterIcon , PlusCircleIcon, ArrowDownTrayIcon} from "@heroicons/react/24/solid";
 import { useRouter } from "next/navigation";
 
 const Page = () => {
@@ -13,7 +13,7 @@ const Page = () => {
   const router = useRouter();
   
   const save =()=>{
-    router.push("/delivery");
+    router.push("/viewpg");
   }
 
   const pdfDownload = async () => {
@@ -92,11 +92,11 @@ const Page = () => {
     <table className="min-w-full mt-10 overflow-x-auto">
       <thead className="border-y-2 border-black">
         <tr>
-          <th className="border-r-2 border-black pb-4">SL.NO</th>
+          <th className="border-r-2 border-black pb-4">SL. <br /> NO</th>
           <th className="border-r-2 border-black pb-4 w-72">
-            Item Name / Description
+            Item Name / <br /> Description
           </th>
-          <th className="border-r-2 border-black pb-4 w-28">HSN Code</th>
+          <th className="border-r-2 border-black pb-4  w-28">HSN <br /> Code</th>
           <th className="border-r-2 border-black pb-4">Qty</th>
           <th className="border-r-2 border-black pb-4">UMO</th>
           <th className="pb-4 w-72 px-2">Remarks</th>
@@ -108,19 +108,19 @@ const Page = () => {
             <td className="border-r-2 border-black text-sm pb-4">
               {index + 1}
             </td>
-            <td className="border-r-2 border-black text-left px-2 text-sm capitalize pb-4">
+            <td className="border-r-2 border-black text-left px-2 text-sm  pb-4">
               {t.name}
             </td>
-            <td className="border-r-2 text-sm border-black capitalize pb-4">
+            <td className="border-r-2 text-sm text-left px-2 border-black  pb-4">
               {t.hsn}
             </td>
-            <td className="border-r-2 text-sm border-black capitalize text-right pr-2 pb-4">
+            <td className="border-r-2 text-sm border-black  text-right pr-2 pb-4">
               {t.qty}
             </td>
-            <td className="border-r-2 text-sm border-black capitalize pb-4">
+            <td className="border-r-2 text-sm border-black  pb-4">
               {t.umoremarks}
             </td>
-            <td className="pb-4 text-sm text-left px-2 capitalize">
+            <td className="pb-4 text-sm text-left px-2 ">
               {t.remarks}
             </td>
           </tr>
@@ -133,15 +133,15 @@ const Page = () => {
     <div className="px-2 py-3 capitalize font-semibold">
       <h1 className="font-bold uppercase">DC details :</h1>
       <div className="mt-2 grid pb-3 grid-cols-2">
-        <label>DC No</label>
-        <p className="font-normal">: {item.dc_number}</p>
+        <label>DC NO</label>
+        <p className="font-normal">: {item.id}</p>
         <label>Date</label>
         <p className="font-normal">: {item.dc_date}</p>
         <label>Your Order Number</label>
         <p className="font-normal">: {item.ordernumber}</p>
         <label>Issue Date</label>
         <p className="font-normal">: {item.dc_issue_date}</p>
-        <label>Your DC No</label>
+        <label>Your DC NO</label>
         <p className="font-normal">: {item.dc_number}</p>
         <label>Date</label>
         <p className="font-normal">: {item.orderdate}</p>
@@ -181,10 +181,10 @@ const Page = () => {
 
             {/* Other footer components go here */}
             <div className="font-bold mx-3 ">
-              <div className="flex justify-end w-[59%]">
+              <div className="flex justify-end w-[57%]">
                 <p className="font-bold  text-sm">
                   Total Number of Quantities :
-                  <span className="font-normal ml-7 text-sm">
+                  <span className="font-normal inline-block ml-7 text-sm">
                     {fetchedData.data2.reduce(
                       (acc, item) => acc + Number(item.qty || 0),
                       0
@@ -215,16 +215,18 @@ const Page = () => {
       </div>
       <div className="mt-5 flex justify-between mx-9">
         <button onClick={save} className="p-2 border-2 flex rounded-md items-center  bg-green-600 text-white ">
-        <PlusIcon className="w-4 h-4" />
-        <span>Add items</span>
+        <ArrowLeftIcon className="w-4 h-4 mr-1" />
+        <span>Return to Delivery  Challan</span>
+
         </button>
 
        
         <button
           onClick={pdfDownload}
-          className="rounded-md p-2 border-2  bg-red-500 text-white"
+          className="rounded-md p-2 border-2  flex items-center bg-red-500 text-white"
         >
-          Print
+          <ArrowDownTrayIcon className="w-4 h-4 mr-1" />
+          Download
         </button>
       </div>
     </div>

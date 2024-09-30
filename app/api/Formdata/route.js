@@ -156,44 +156,55 @@ export async function POST(req) {
 
 
 // Handle GET request for quotations
-export async function GET(request) {
+export async function GET(req) {
+  const url = new URL(req.url);
+  const quotation_id = url.searchParams.get("id"); // Extract quotation_id from query parameters
   let db;
-  try {
-    const url = new URL(request.url);
-    const params = url.searchParams;
-    const quotation_id = params.get("quotation_id");
 
+  try {
     db = await opendb(); // Open the database
 
-    // Sample SQL queries, adjust as necessary
-    const selectSql = `SELECT * FROM quotation ORDER by id DESC LIMIT 1 `; // First SQL query
-    const selectSql2 =` SELECT *
-    FROM items
-    WHERE quotation_id = (SELECT MAX(quotation_id) FROM items)`;
-    ; // Second SQL query
+    let data;
+    let itemsData = []; // Initialize itemsData to an empty array
 
-    const data = await db.all(selectSql);
-    const data2 = await db.all(selectSql2);
+    if (quotation_id) {
+      // Fetch specific quotation and its associated items by quotation_id
+      const selectSql = `SELECT * FROM quotation WHERE id = ?`;
+      data = await db.get(selectSql, [quotation_id]);
 
-    // If you want to return the data regardless of quotation_id
-    return NextResponse.json({ data, data2 });
+      if (!data) {
+        return NextResponse.json(
+          { error: "Quotation not found" },
+          { status: 404 }
+        );
+      }
+
+      const selectItemsSql = `SELECT * FROM items WHERE quotation_id = ?`;
+      itemsData = await db.all(selectItemsSql, [quotation_id]);
+    } else {
+      // If no quotation_id, fetch all quotations and all items 
+      const selectSql = `SELECT * FROM quotation ORDER BY id DESC LIMIT 1`;
+      data = await db.all(selectSql);
+      itemsData = await db.all(` SELECT * FROM items WHERE quotation_id = (SELECT MAX(quotation_id) FROM items)`);
+    }
+
+    return NextResponse.json({ data: data, data2: itemsData });
 
   } catch (error) {
     console.error("Error retrieving data:", error);
-    return new Response(
-      JSON.stringify({ error: "Error retrieving data" }),
-      {
-        headers: { "Content-Type": "application/json" },
-        status: 500,
-      }
+    return NextResponse.json(
+      { error: "Error retrieving data" },
+      { status: 500 }
     );
   } finally {
     if (db) {
       await db.close(); // Ensure the database connection is closed
-      console.log("Closed the database connection.");
     }
   }
 }
+
+
+
 export async function PUT(req) {
   let db;
   try {
