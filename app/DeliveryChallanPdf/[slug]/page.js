@@ -4,6 +4,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import {ArrowLeftIcon , PrinterIcon , PlusCircleIcon, ArrowDownTrayIcon} from "@heroicons/react/24/solid";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const QuotationPage = ({ params }) => {
   const pdfDownload = async () => {
@@ -42,7 +43,11 @@ const QuotationPage = ({ params }) => {
       pdf.save("delivery-challan.pdf");
     });
   };
+  const router = useRouter()
 
+  const save =()=>{
+    router.push("/edit");
+  }
   
   const [quotation, setQuotation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -165,7 +170,7 @@ const QuotationPage = ({ params }) => {
 
   return (
     <div>
-      <h1>Quotation Details</h1>
+      {/* <h1>Quotation Details</h1> */}
       
       {quotation && (
         <div>
@@ -323,11 +328,13 @@ const QuotationPage = ({ params }) => {
        
       </div>
       <div className="mt-5 flex justify-between mx-9">
-        <button  className="p-2 border-2 flex rounded-md items-center  bg-green-600 text-white ">
+        <Link href={`/edit?id=${params.slug}`} >
+        <button   className="p-2 border-2 flex rounded-md items-center  bg-green-600 text-white ">
         <ArrowLeftIcon className="w-4 h-4 mr-1" />
         <span>Return to Delivery  Challan</span>
 
         </button>
+        </Link>
 
        
         <button

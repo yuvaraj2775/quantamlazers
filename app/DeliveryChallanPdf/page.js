@@ -23,7 +23,7 @@ const SearchInput = () => {
         value={searchInput}
         onChange={handleSearchChange}
         className='h-10 w-2/5 border-2 rounded-md'
-        placeholder="Enter quotation ID"
+        placeholder="Enter DC ID"
       />
       <button type="submit" className='h-10 border-2 rounded-md ml-2'>Search</button>
     </form>
