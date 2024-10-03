@@ -157,12 +157,16 @@ export default function Page() {
   return (
     <form onSubmit={handleSubmit}>
       <div className="h-screen overflow-y-auto w-full p-6  bg-gray-50">
-        <h1 className="text-center mt-5 font-bold text-xl">DC Form</h1>
-        <h1 className="text-right mt-5 font-bold text-blue-700 mr-1">
-          DC NO : <span className="text-red-900 text-lg">Draft</span>
+        <div className="grid grid-cols-3 mt-5">
+          <h1></h1>
+        <h1 className="text-center font-bold text-xl">DC Form</h1>
+        <h1 className="text-right text-lg font-bold text-blue-700 mr-1">
+          DC NO : <span className="text-red-900 text-2xl">Draft</span>
         </h1>
+        </div>
+       
 
-        <div className="grid grid-cols-2 mt-2 gap-4">
+        <div className="grid grid-cols-2 mt-4 gap-4">
           <div className="capitalize">
             <label htmlFor="Buyer" className="text-sm font-semibold">
               Buyer
@@ -410,13 +414,13 @@ export default function Page() {
                     as="h3"
                     className="text-base font-semibold leading-6 text-gray-900"
                   >
-                    DC challan number {dataed}
+                    DC Challan Number {dataed}
                    
 
                   </DialogTitle>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
-                     saved successfully!
+                     Saved Successfully!
                     </p>
                   </div>
                 </div>
@@ -426,7 +430,7 @@ export default function Page() {
                   type="button"
                   onClick={() => {
                     setOpen(false);
-                    router.push("/deliverypg"); // Navigate to another page
+                    router.push(`/DeliveryChallanPdf/${dataed}`); // Navigate to another page
                   }}
                   className="inline-flex w-full justify-center  "
                 >

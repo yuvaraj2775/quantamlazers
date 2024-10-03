@@ -13,7 +13,7 @@ export default function  Dashboard() {
         Quantum Lazers
       </div>
       <div className="space-y-6">
-        <Link href="/Search">
+        <Link href="/DeliveryChallanPdf">
           <div className="flex items-center p-2 rounded-lg hover:bg-blue-200 transition-colors">
             <MagnifyingGlassIcon className="w-5 h-5 text-slate-600 mr-3" />
             <p className="text-slate-600 text-lg font-semibold">Search</p>

@@ -13,6 +13,7 @@ import { CheckIcon } from "@heroicons/react/24/outline";
 
 
 export default function Page({params}) {
+  
   const [formData, setFormData] = useState({ items: [] ,items1:[] });
   const [fetchedData, setFetchedData] = useState(null);
   const router = useRouter();
@@ -119,14 +120,18 @@ export default function Page({params}) {
       onSubmit={handleSubmit}
       className="h-screen capitalize p-6 overflow-y-auto bg-gray-50"
     >
+      <div className="grid grid-cols-3" >
+        <h1 ></h1>
       <h1 className="text-center mt-5 font-bold text-xl text-gray-800">
         Edit page
       </h1>
-      <h1 className="text-right mt-5 font-bold text-blue-600 mr-1">
-        DC NO: <span className="text-red-900 text-lg">{formData.items1?.id}</span>{" "}
+      <h1 className="text-right mt-5 font-bold text-lg text-blue-600 mr-1">
+        DC NO: <span className="text-red-900 text-2xl">{formData.items1?.id}</span>{" "}
       </h1>
+      </div>
+   
 
-      <div className="grid grid-cols-2 gap-4 mt-2">
+      <div className="grid grid-cols-2 gap-4 mt-4">
         <div className="capitalize">
           <label htmlFor="buyer" className="text-sm font-semibold">
             Buyer
@@ -342,20 +347,20 @@ export default function Page({params}) {
               ))}
             </tbody>
           </table>
-          <div className="flex justify-evenly  w-[70%]">
-            <p className="font-bold mt-2">Total Number of Qty: </p>
-            <span className="  text-right mt-2 inline-block">
-              {/* {formDatadata.reduce(
-                (acc, item) => acc + Number(item.qty || 0),
-                0
-              )} */}
-            </span>
-          </div>
+          <div className="flex justify-evenly w-[70%]">
+  <p className="font-bold mt-2">Total Number of Qty: </p>
+  <span className="text-right mt-2 inline-block">
+    {formData.items.reduce((acc, item) => acc + Number(item.qty || 0), 0)}
+  </span>
+</div>
         </div>
 
       <div className="flex justify-center gap-3 mt-5">
         <button
           type="button"
+          onClick={() => {
+            router.push("/delivery"); // Navigate to another page
+          }}
           
           className="text-center cursor-pointer border-2 p-2 w-24 flex items-center justify-center rounded-md bg-green-500 text-white"
         >
@@ -373,7 +378,7 @@ export default function Page({params}) {
           type="button"
           className="text-center cursor-pointer border-2 p-2 w-24  flex items-center justify-center rounded-md bg-gray-500 text-white"
           onClick={() => {
-            router.push("/"); // Navigate to another page
+            router.push(`/DeliveryChallanPdf/${searchid}`); // Navigate to another page
           }}
         >
           <ViewfinderCircleIcon    className="w-4 h-4 mr-1 mt-1" />
@@ -399,10 +404,10 @@ export default function Page({params}) {
                     as="h3"
                     className="text-base font-semibold leading-6 text-gray-900"
                   >
-                    DC challan number {formData.items1?.id}
+                    DC Challan Number {formData.items1?.id}
                   </DialogTitle>
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500">saved successfully!</p>
+                    <p className="text-sm text-gray-500">Saved Successfully!</p>
                   </div>
                 </div>
               </div>

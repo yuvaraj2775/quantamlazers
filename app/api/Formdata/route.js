@@ -183,9 +183,10 @@ export async function GET(req) {
       itemsData = await db.all(selectItemsSql, [quotation_id]);
     } else {
       // If no quotation_id, fetch all quotations and all items 
-      const selectSql = `SELECT * FROM quotation ORDER BY id DESC LIMIT 1`;
+      const selectSql = `SELECT * FROM quotation ORDER BY id DESC
+      `;
       data = await db.all(selectSql);
-      itemsData = await db.all(` SELECT * FROM items WHERE quotation_id = (SELECT MAX(quotation_id) FROM items)`);
+      itemsData = await db.all(` SELECT * FROM items `);
     }
 
     return NextResponse.json({ data: data, data2: itemsData });
