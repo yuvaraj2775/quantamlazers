@@ -240,7 +240,7 @@ const QuotationPage = ({ params }) => {
       </div>
       <div className="mt-5 flex justify-between mx-9">
         <Link href={`/edit?id=${params.slug}`} >
-        <button   className="p-2 border-2 flex rounded-md items-center  bg-green-600 text-white ">
+        <button   className="p-2 border-2 flex rounded-md items-center  bg-violet-600 text-white ">
         <ArrowLeftIcon className="w-4 h-4 mr-1" />
         <span>Return to Delivery  Challan</span>
 

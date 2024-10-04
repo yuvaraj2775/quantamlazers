@@ -6,7 +6,13 @@ import {
   DialogPanel,
   DialogTitle,
 } from "@headlessui/react";
-import { PlusIcon, XMarkIcon ,PlusCircleIcon , BookmarkIcon , ViewfinderCircleIcon } from "@heroicons/react/24/solid";
+import {
+  PlusIcon,
+  XMarkIcon,
+  PlusCircleIcon,
+  BookmarkIcon,
+  ViewfinderCircleIcon,
+} from "@heroicons/react/24/solid";
 import { useRouter } from "next/navigation";
 import { CheckIcon } from "@heroicons/react/24/outline";
 
@@ -28,7 +34,7 @@ export default function Page() {
         qty: "",
         umoremarks: "NOS",
         remarks: "",
-        },
+      },
     ],
   });
 
@@ -69,7 +75,7 @@ export default function Page() {
   const handleRowChange = (index, e) => {
     const { name, value } = e.target;
     const updatedItems = [...formData.items];
-  
+
     // Check if the first character is a number or not
     if (isNaN(value.charAt(0))) {
       // Capitalize the first letter if it's a text
@@ -81,11 +87,10 @@ export default function Page() {
       // Keep the value unchanged if it's a number
       updatedItems[index] = { ...updatedItems[index], [name]: value };
     }
-  
+
     // Update the formData with the modified items
     setFormData((prev) => ({ ...prev, items: updatedItems }));
   };
-  
 
   const handleAddRow = () => {
     setFormData((prev) => ({
@@ -258,62 +263,62 @@ export default function Page() {
       </div>
 
       <div className="border-2 border-gray-300 mt-5 rounded-lg overflow-x-auto shadow-sm">
-          <table className="w-full">
-            <thead className="bg-gray-200 font-semibold">
-              <tr className="font-normal">
-                <th className="p-1 border-2 border-r-gray-300">Sl. No</th>
-                <th className=" border-2 w-40 border-r-gray-300">
-                  Item Name / <br />
-                    Description
-                </th>
-                <th className="p-1 border-2 border-r-gray-300">HSN Code</th>
-                <th className="p-2 border-2 border-r-gray-300">Qty</th>
-                <th className="p-2 border-2 border-r-gray-300">UMO</th>
-                <th className="p-2 border-2 border-r-gray-300">Remarks</th>
-                <th className="p-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {formData.items.map((item, i) => (
-                <tr key={i} className="border-b">
-                  <td className="p-2 border-2 w-10 border-r-gray-300">{i + 1}</td>
-                  <td className="border-r-gray-300 border-2  px-2">
-                    <input
-                      type="text"
-                      name="name"
-                      value={item.name}
-                      onChange={(e) => handleRowChange(i, e)}
-                      placeholder="Name"
-                      className="w-64 border h-10  border-r-gray-300 rounded p-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                    />
-                  </td>
-                  <td className="border-r-gray-300 border-2 px-1">
-                    <input
-                      type="text"
-                      name="hsn"
-                      value={item.hsn}
-                      onChange={(e) => handleRowChange(i, e)}
-                      placeholder="HSN"
-                      className="w-28 border  rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                    />
-                  </td>
-                  <td className="border-r-gray-300 border-2 px-2">
-                    <input
-                      type="number"
-                      name="qty"
-                      value={item.qty}
-                      onChange={(e) => handleRowChange(i, e)}
-                      placeholder="Qty"
-                      className="w-20 text-right border rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                    />
-                    {/* <select name="qty" id=""  onChange={(e) => handleRowChange(i, e)}>
+        <table className="w-full">
+          <thead className="bg-gray-200 font-semibold">
+            <tr className="font-normal">
+              <th className="p-1 border-2 border-r-gray-300">Sl. No</th>
+              <th className=" border-2 w-40 border-r-gray-300">
+                Item Name / <br />
+                Description
+              </th>
+              <th className="p-1 border-2 border-r-gray-300">HSN Code</th>
+              <th className="p-2 border-2 border-r-gray-300">Qty</th>
+              <th className="p-2 border-2 border-r-gray-300">UMO</th>
+              <th className="p-2 border-2 border-r-gray-300">Remarks</th>
+              <th className="p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {formData.items.map((item, i) => (
+              <tr key={i} className="border-b">
+                <td className="p-2 border-2 w-10 border-r-gray-300">{i + 1}</td>
+                <td className="border-r-gray-300 border-2  px-2">
+                  <input
+                    type="text"
+                    name="name"
+                    value={item.name}
+                    onChange={(e) => handleRowChange(i, e)}
+                    placeholder="Name"
+                    className="w-64 border h-10  border-r-gray-300 rounded p-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+                  />
+                </td>
+                <td className="border-r-gray-300 border-2 px-1">
+                  <input
+                    type="text"
+                    name="hsn"
+                    value={item.hsn}
+                    onChange={(e) => handleRowChange(i, e)}
+                    placeholder="HSN"
+                    className="w-28 border  rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+                  />
+                </td>
+                <td className="border-r-gray-300 border-2 px-2">
+                  <input
+                    type="number"
+                    name="qty"
+                    value={item.qty}
+                    onChange={(e) => handleRowChange(i, e)}
+                    placeholder="Qty"
+                    className="w-20 text-right border rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+                  />
+                  {/* <select name="qty" id=""  onChange={(e) => handleRowChange(i, e)}>
                       <option value="NOS">NOS</option>
                       <option value="EACH">EACH</option>
                       <option value="SET">SET</option>
                     </select> */}
-                  </td>
-                  <td className="border-r-gray-300 border-2 px-2">
-                    {/* <input
+                </td>
+                <td className="border-r-gray-300 border-2 px-2">
+                  {/* <input
                       type="text"
                       name="umoremarks"
                       value={item.umoremarks}
@@ -321,55 +326,59 @@ export default function Page() {
                       placeholder="UMO"
                       className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
                     /> */}
-                      <select name="umoremarks" id=""  value={item.umoremarks}
-                      onChange={(e) => handleRowChange(i, e)}>
-                      <option value="NOS">NOS</option>
-                      <option value="EACH">EACH</option>
-                      <option value="SET">SET</option>
-                    </select>
-                  </td>
-                  <td className="border-r-gray-300 border-2 px-2">
-                    <textarea
-                      type="text"
-                      name="remarks"
-                      value={item.remarks}
-                      onChange={(e) => handleRowChange(i, e)}
-                      placeholder="Remarks"
-                      className="w-[230px] border h-14  rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                    />
-                  </td>
-                  <td className="flex justify-center items-center mt-3  border-gray-300 space-x-2 px-2">
-                    <button
-                      type="button"
-                      onClick={handleAddRow}
-                      className="flex items-center justify-center w-8 h-8 text-green-700 bg-green-100 rounded-full hover:bg-green-200 transition"
-                      title="Add Row"
-                    >
-                      <PlusIcon className="w-5 h-5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteRow(i)}
-                      className="flex items-center justify-center w-8 h-8 text-red-900 bg-red-100 rounded-full hover:bg-red-200 transition"
-                      title="Delete Row"
-                    >
-                      <XMarkIcon className="w-5 h-5" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="flex justify-evenly  w-[70%]">
-            <p className="font-bold mt-2">Total Number of Qty: </p>
-            <span className="  text-right mt-2 inline-block">
-              {formData.items.reduce(
-                (acc, item) => acc + Number(item.qty || 0),
-                0
-              )}
-            </span>
-          </div>
+                  <select
+                    name="umoremarks"
+                    id=""
+                    value={item.umoremarks}
+                    onChange={(e) => handleRowChange(i, e)}
+                  >
+                    <option value="NOS">NOS</option>
+                    <option value="EACH">EACH</option>
+                    <option value="SET">SET</option>
+                  </select>
+                </td>
+                <td className="border-r-gray-300 border-2 px-2">
+                  <textarea
+                    type="text"
+                    name="remarks"
+                    value={item.remarks}
+                    onChange={(e) => handleRowChange(i, e)}
+                    placeholder="Remarks"
+                    className="w-[230px] border h-14  rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+                  />
+                </td>
+                <td className="flex justify-center items-center mt-3  border-gray-300 space-x-2 px-2">
+                  <button
+                    type="button"
+                    onClick={handleAddRow}
+                    className="flex items-center justify-center w-8 h-8 text-green-700 bg-green-100 rounded-full hover:bg-green-200 transition"
+                    title="Add Row"
+                  >
+                    <PlusIcon className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteRow(i)}
+                    className="flex items-center justify-center w-8 h-8 text-red-900 bg-red-100 rounded-full hover:bg-red-200 transition"
+                    title="Delete Row"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="flex justify-evenly  w-[70%]">
+          <p className="font-bold mt-2">Total Number of Qty : </p>
+          <span className="  text-right mt-2 inline-block">
+            {formData.items.reduce(
+              (acc, item) => acc + Number(item.qty || 0),
+              0
+            )}
+          </span>
         </div>
+      </div>
 
       <div className="flex justify-center gap-3 mt-5">
         <button
@@ -394,8 +403,7 @@ export default function Page() {
             router.push("/deliverypg"); // Navigate to another page
           }}
         >
-          <ViewfinderCircleIcon    className="w-4 h-4 mr-1 mt-1" />
-
+          <ViewfinderCircleIcon className="w-4 h-4 mr-1 mt-1" />
           view
         </button>
       </div>

@@ -65,13 +65,26 @@ export default function Page({params}) {
   };
   
 
+
   const handleRowChange = (index, e) => {
     const { name, value } = e.target;
     const updatedItems = [...formData.items];
-    updatedItems[index] = { ...updatedItems[index], [name]: value };
+  
+    // Check if the first character is a number or not
+    if (isNaN(value.charAt(0))) {
+      // Capitalize the first letter if it's a text
+      updatedItems[index] = {
+        ...updatedItems[index],
+        [name]: value.charAt(0).toUpperCase() + value.slice(1),
+      };
+    } else {
+      // Keep the value unchanged if it's a number
+      updatedItems[index] = { ...updatedItems[index], [name]: value };
+    }
+  
+    // Update the formData with the modified items
     setFormData((prev) => ({ ...prev, items: updatedItems }));
   };
-
   const handleAddRow = () => {
     setFormData((prev) => ({
       ...prev,
@@ -348,7 +361,7 @@ export default function Page({params}) {
             </tbody>
           </table>
           <div className="flex justify-evenly w-[70%]">
-  <p className="font-bold mt-2">Total Number of Qty: </p>
+  <p className="font-bold mt-2">Total Number of Qty : </p>
   <span className="text-right mt-2 inline-block">
     {formData.items.reduce((acc, item) => acc + Number(item.qty || 0), 0)}
   </span>

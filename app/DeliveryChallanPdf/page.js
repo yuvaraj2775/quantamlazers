@@ -104,9 +104,9 @@ const SearchInput = () => {
         <div className="fixed inset-0 bg-black bg-opacity-30" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <Dialog.Panel className="mx-auto max-w-sm rounded bg-white p-6">
-            <Dialog.Title className="text-lg font-semibold">ID Not Found</Dialog.Title>
+            <Dialog.Title className="text-lg font-semibold"> DC ID Not Found</Dialog.Title>
             <div className="mt-2">
-              <p className="text-sm text-gray-500">The ID you entered does not exist.</p>
+              <p className="text-sm text-gray-500">The DC ID you entered does not exist.</p>
             </div>
             <div className="mt-4">
               <button

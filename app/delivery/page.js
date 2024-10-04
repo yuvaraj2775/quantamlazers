@@ -373,7 +373,7 @@ export default function Page() {
             </tbody>
           </table>
           <div className="flex justify-evenly  w-[70%]">
-            <p className="font-bold mt-2">Total Number of Qty: </p>
+            <p className="font-bold mt-2">Total Number of Qty : </p>
             <span className="  text-right mt-2 inline-block">
               {formData.items.reduce(
                 (acc, item) => acc + Number(item.qty || 0),
