@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -6,13 +6,23 @@ import {
   DialogPanel,
   DialogTitle,
 } from "@headlessui/react";
-import { PlusIcon, XMarkIcon ,PlusCircleIcon , BookmarkIcon , ViewfinderCircleIcon } from "@heroicons/react/24/solid";
-import { useRouter,useSearchParams } from "next/navigation";
+import {
+  PlusIcon,
+  XMarkIcon,
+  PlusCircleIcon,
+  BookmarkIcon,
+  ViewfinderCircleIcon,
+} from "@heroicons/react/24/solid";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CheckIcon } from "@heroicons/react/24/outline";
+import Formitems from "./Formitems";
+import ItemRows from "./ItemRows";
+import Windialog from "./Windialog";
+import Losedialog from "./Losedialog";
 
-
-
-export default function Page({params}) {
+export default function Page({ params }) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [rowToDelete, setRowToDelete] = useState(null);
   
   const [formData, setFormData] = useState({ items: [] ,items1:[] });
   const [fetchedData, setFetchedData] = useState(null);
@@ -95,11 +105,22 @@ export default function Page({params}) {
     }));
   };
 
-  const handleDeleteRow = (index) => {
-    const updatedItems = formData.items.filter((_, i) => i !== index);
-    setFormData((prev) => ({ ...prev, items: updatedItems }));
+  const openDeleteDialog = (index) => {
+    setRowToDelete(index);
+    setDeleteDialogOpen(true);
   };
 
+   const handleDeleteRow = () => {
+    const newItems = formData.items.filter((_, i) => i !== rowToDelete);
+    setFormData({ items: newItems });
+    setDeleteDialogOpen(false);
+    setRowToDelete(null);
+  };
+
+  const cancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setRowToDelete(null);
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formDataToSend = {
@@ -119,6 +140,7 @@ export default function Page({params}) {
         const result = await response.json();
         console.log("Update successful:", result);
         setOpen(true);
+        router.push(`/DeliveryChallanPdf/${searchid}`)
       } else {
         throw new Error("Update failed");
       }
@@ -126,133 +148,92 @@ export default function Page({params}) {
       console.error("Error during submission:", error);
     }
   };
-  
-
+    const dated = formData.items1?.id
   return (
-     <form
+    <form
       onSubmit={handleSubmit}
       className="h-screen capitalize p-6 overflow-y-auto bg-gray-50"
     >
-      <div className="grid grid-cols-3" >
-        <h1 ></h1>
-      <h1 className="text-center mt-5 font-bold text-xl text-gray-800">
-        Edit page
-      </h1>
-      <h1 className="text-right mt-5 font-bold text-lg text-blue-600 mr-1">
-        DC NO: <span className="text-red-900 text-2xl">{formData.items1?.id}</span>{" "}
-      </h1>
+      <div className="grid grid-cols-3">
+        <h1></h1>
+        <h1 className="text-center mt-5 font-bold text-xl text-gray-800">
+          Edit page
+        </h1>
+        <h1 className="text-right mt-5 font-bold text-lg text-blue-600 mr-1">
+          DC NO:{" "}
+          <span className="text-red-900 text-2xl">{formData.items1?.id}</span>{" "}
+        </h1>
       </div>
-   
-
-      <div className="grid grid-cols-2 gap-4 mt-4">
-        <div className="capitalize">
-          <label htmlFor="buyer" className="text-sm font-semibold">
-            Buyer
-          </label>
-          <textarea
-            className="border-2 mt-1 rounded uppercase w-full h-[175px] px-2 -pt-10 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+      <div className="grid grid-cols-2 mt-4 gap-4">
+        <div>
+          <Formitems
+            label="Buyer"
+            type="textarea"
             name="buyer"
-            value={formData.items1?.buyer || ""}
+            value={formData.items1?.buyer}
             onChange={handleInputChange}
+            required
           />
         </div>
 
         <div>
           <div className="capitalize grid grid-cols-3">
-            <div>
-              <label htmlFor="dc_date" className="text-sm font-semibold">
-                DC Date
-              </label>
-              <input
-                type="date"
-                className="border-2 mt-1 h-10 rounded w-full px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                name="dc_date"
-                value={formData.items1?.dc_date || ""}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="mx-1">
-              <label htmlFor="ordernumber" className="text-sm font-semibold">
-                Your Order Number
-              </label>
-              <input
-                type="text"
-                className="border-2 mt-1 h-10 rounded w-full px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                name="ordernumber"
-                value={formData.items1?.ordernumber || ""}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div>
-              <label htmlFor="orderdate" className="text-sm font-semibold">
-                Your Order Date
-              </label>
-              <input
-                type="date"
-                className="border-2 h-10 rounded mt-1 w-full px-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                name="orderdate"
-                value={formData.items1?.orderdate || ""}
-                onChange={handleInputChange}
-              />
-            </div>
+            <Formitems
+              label="DC Date"
+              type="date"
+              name="dc_date"
+              value={formData.items1?.dc_date}
+              onChange={handleInputChange}
+              required
+            />
+            <Formitems
+              label="     Your Order Number"
+              type="text"
+              name="ordernumber"
+              value={formData.items1?.ordernumber}
+              onChange={handleInputChange}
+              required
+            />
+            <Formitems
+              label="  Your Order Date"
+              type="text"
+              name="orderdate"
+              value={formData.items1?.orderdate}
+              onChange={handleInputChange}
+              required
+            />
           </div>
-          <div>
-            <div className="grid grid-cols-2">
-              <div className="mr-1">
-                <label
-                  htmlFor="vehicle_number"
-                  className="text-sm font-semibold"
-                >
-                  Vehicle Number
-                </label>
-                <input
-                  type="text"
-                  name="vehicle_number"
-                  value={formData.items1?.vehicle_number || ""}
-                  onChange={handleInputChange}
-                  className="h-10 w-full border-2 uppercase px-2 mt-1 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
-                />
-              </div>
-              <div>
-                <label htmlFor="gst_number" className="text-sm font-semibold">
-                  GST Number
-                </label>
-                <input
-                  type="text"
-                  name="gst_number"
-                  value={formData.items1?.gst_number || ""}
-                  onChange={handleInputChange}
-                  className="h-10 w-full border-2 uppercase mt-1 px-2 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
-                />
-              </div>
-              <div className="mr-1">
-                <label htmlFor="dc_number" className="text-sm font-semibold">
-                  Your DC Number
-                </label>
-                <input
-                  type="text"
-                  name="dc_number"
-                  value={formData.items1?.dc_number || ""}
-                  onChange={handleInputChange}
-                  className="h-10 w-full border-2 uppercase px-2 mt-1 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="dc_issue_date"
-                  className="text-sm font-semibold"
-                >
-                  Your DC Date
-                </label>
-                <input
-                  type="date"
-                  name="dc_issue_date"
-                  value={formData.items1?.dc_issue_date || ""}
-                  onChange={handleInputChange}
-                  className="h-10 w-full border-2 mt-1 px-2 shadow-sm rounded focus:outline-none focus:ring focus:ring-blue-300"
-                />
-              </div>
-            </div>
+
+          <div className="grid grid-cols-2 mt">
+            <Formitems
+              label="   Vehicle Number"
+              type="text"
+              name="vehicle_number"
+              value={formData.items1?.vehicle_number}
+              onChange={handleInputChange}
+              required
+            />
+            <Formitems
+              label="   GST Number"
+              type="text"
+              name="gst_number"
+              value={formData.items1?.gst_number}
+              onChange={handleInputChange}
+            />
+            <Formitems
+              label=" Your DC Number"
+              type="text"
+              name="dc_number"
+              value={formData.items1?.dc_number}
+              onChange={handleInputChange}
+            />
+            <Formitems
+              label=" Your  DC Date"
+              type="date"
+              name="dc_issue_date"
+              value={formData.items1?.dc_issue_date}
+              onChange={handleInputChange}
+            />
           </div>
         </div>
       </div>
@@ -260,115 +241,37 @@ export default function Page({params}) {
       <div className="border-2 border-gray-300 mt-5 rounded-lg overflow-x-auto shadow-sm">
           <table className="w-full">
             <thead className="bg-gray-200 font-semibold">
-              <tr className="font-normal">
-                <th className="p-1 border-2 border-r-gray-300">Sl. No</th>
-                <th className=" border-2 w-40 border-r-gray-300">
-                  Item Name / <br />
-                    Description
-                </th>
-                <th className="p-1 border-2 border-r-gray-300">HSN Code</th>
-                <th className="p-2 border-2 border-r-gray-300">Qty</th>
-                <th className="p-2 border-2 border-r-gray-300">UMO</th>
-                <th className="p-2 border-2 border-r-gray-300">Remarks</th>
-                <th className="p-2">Actions</th>
+              <tr>
+                <th>Sl. No</th>
+                <th>Item Name</th>
+                <th>HSN Code</th>
+                <th>Qty</th>
+                <th>UMO</th>
+                <th>Remarks</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {formData.items?.map((item, i) => (
-                <tr key={i} className="border-b">
-                  <td className="p-2 border-2 w-10 border-r-gray-300">{i + 1}</td>
-                  <td className="border-r-gray-300 border-2  px-2">
-                    <input
-                      type="text"
-                      name="name"
-                      value={item.name}
-                      onChange={(e) => handleRowChange(i, e)}
-                      placeholder="Name"
-                      className="w-64 border h-10  border-r-gray-300 rounded p-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                    />
-                  </td>
-                  <td className="border-r-gray-300 border-2 px-1">
-                    <input
-                      type="text"
-                      name="hsn"
-                      value={item.hsn}
-                      onChange={(e) => handleRowChange(i, e)}
-                      placeholder="HSN"
-                      className="w-28 border  rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                    />
-                  </td>
-                  <td className="border-r-gray-300 border-2 px-2">
-                    <input
-                      type="number"
-                      name="qty"
-                      value={item.qty}
-                      onChange={(e) => handleRowChange(i, e)}
-                      placeholder="Qty"
-                      className="w-20 text-right border rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                    />
-                    {/* <select name="qty" id=""  onChange={(e) => handleRowChange(i, e)}>
-                      <option value="NOS">NOS</option>
-                      <option value="EACH">EACH</option>
-                      <option value="SET">SET</option>
-                    </select> */}
-                  </td>
-                  <td className="border-r-gray-300 border-2 px-2">
-                    {/* <input
-                      type="text"
-                      name="umoremarks"
-                      value={item.umoremarks}
-                      onChange={(e) => handleRowChange(i, e)}
-                      placeholder="UMO"
-                      className="w-full border capitalize rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                    /> */}
-                      <select name="umoremarks" id=""  value={item.umoremarks}
-                      onChange={(e) => handleRowChange(i, e)}>
-                      <option value="NOS">NOS</option>
-                      <option value="EACH">EACH</option>
-                      <option value="SET">SET</option>
-                    </select>
-                  </td>
-                  <td className="border-r-gray-300 border-2 px-2">
-                    <textarea
-                      type="text"
-                      name="remarks"
-                      value={item.remarks}
-                      onChange={(e) => handleRowChange(i, e)}
-                      placeholder="Remarks"
-                      className="w-[230px] border h-14  rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                    />
-                  </td>
-                  <td className="flex justify-center items-center mt-3  border-gray-300 space-x-2 px-2">
-                    <button
-                      type="button"
-                      onClick={handleAddRow}
-                      className="flex items-center justify-center w-8 h-8 text-green-700 bg-green-100 rounded-full hover:bg-green-200 transition"
-                      title="Add Row"
-                    >
-                      <PlusIcon className="w-5 h-5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteRow(i)}
-                      className="flex items-center justify-center w-8 h-8 text-red-900 bg-red-100 rounded-full hover:bg-red-200 transition"
-                      title="Delete Row"
-                    >
-                      <XMarkIcon className="w-5 h-5" />
-                    </button>
-                  </td>
-                </tr>
+              
+                <ItemRows key={i} index={i} item={item} 
+                
+                handleRowChange={handleRowChange} handleAddRow={handleAddRow} openDeleteDialog={openDeleteDialog} />
               ))}
             </tbody>
           </table>
-          <div className="flex justify-evenly w-[70%]">
-  <p className="font-bold mt-2">Total Number of Qty : </p>
-  <span className="text-right mt-2 inline-block">
-    {formData.items.reduce((acc, item) => acc + Number(item.qty || 0), 0)}
-  </span>
-</div>
+          <div className="flex justify-evenly  w-[70%]">
+            <p className="font-bold mt-2">Total Number of Qty : </p>
+            <span className="  text-right mt-2 inline-block">
+              {formData.items.reduce(
+                (acc, item) => acc + Number(item.qty || 0),
+                0
+              )}
+            </span>
+          </div>
         </div>
 
-      <div className="flex justify-center gap-3 mt-5">
+        <div className="flex justify-center gap-3 mt-5">
         <button
           type="button"
           onClick={() => {
@@ -400,49 +303,14 @@ export default function Page({params}) {
         </button>
       </div>
 
-      <Dialog open={open} onClose={() => setOpen(false)} className="relative ">
-        <DialogBackdrop className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <DialogPanel className="relative transform overflow-hidden rounded-lg w-1/3 h-1/3 bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all">
-              <div>
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                  <CheckIcon
-                    aria-hidden="true"
-                    className="h-6 w-6 text-green-600"
-                  />
-                </div>
-                <div className="mt-3 text-center sm:mt-5">
-                  <DialogTitle
-                    as="h3"
-                    className="text-base font-semibold leading-6 text-gray-900"
-                  >
-                    DC Challan Number {formData.items1?.id}
-                  </DialogTitle>
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-500">Saved Successfully!</p>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-5 sm:mt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    router.push(`/DeliveryChallanPdf/${searchid}`); // Navigate to another page
-                  }}
-                  className="inline-flex w-full justify-center "
-                >
-                  <span className=" bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 rounded-md">
-                    {" "}
-                    Done
-                  </span>
-                </button>
-              </div>
-            </DialogPanel>
-          </div>
-        </div>
-      </Dialog>
+
+      
+
+        <Windialog open={open} onClose={() => setOpen(false)} dataId={dated} />
+       
+
+        <Losedialog open={deleteDialogOpen} onClose={cancelDelete} onDelete={handleDeleteRow} />
+
     </form>
   );
-} 
+}
