@@ -212,6 +212,7 @@ const Page = () => {
             </div>
           </div>
         ))}
+        
       </div>
       <div className="mt-5 flex justify-between mx-9">
         <button onClick={save} className="p-2 border-2 flex rounded-md items-center  bg-green-600 text-white ">

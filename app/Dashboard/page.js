@@ -5,6 +5,8 @@ import {
   MagnifyingGlassIcon,
   TableCellsIcon,
   DocumentDuplicateIcon,
+  ClipboardDocumentListIcon,
+  ClipboardDocumentIcon
 } from "@heroicons/react/24/solid";
 import { usePathname } from 'next/navigation';
 
@@ -12,11 +14,11 @@ export default function  Dashboard() {
 
   const navigation = [
     { name: "Search", href: "/DeliveryChallanPdf", icon: MagnifyingGlassIcon },
-    { name: "Quotations", href: "/Quotation", icon: TableCellsIcon },
+    { name: "Quotations", href: "/Quatation", icon: ClipboardDocumentIcon },
     {
       name: "Delivery Challan",
       href: "/delivery",
-      icon: DocumentDuplicateIcon,
+      icon: ClipboardDocumentListIcon,
     },
   ];
   function classNames(...classes) {

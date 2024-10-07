@@ -5,6 +5,7 @@ import Forminput from "./Forminput"; // Adjust the import path as necessary
 import Itemrows from "./Itemrows"; // Adjust the import path as necessary
 import Deletedialog from "./Deletedialog"; // Adjust the import path as necessary
 import Successdialog from "./Successdialog"; // Adjust the import path as necessary
+import{FolderArrowDownIcon} from "@heroicons/react/24/solid";
 
 
 export default function Page() {
@@ -185,13 +186,13 @@ export default function Page() {
           </div>
 
           <div>
-            <div className="capitalize grid grid-cols-3">
-               <Forminput label="DC Date" type="date" name="docdate" value={ inputData.docdate} onChange={handleInputChange} required />
-               <Forminput label="     Your Order Number" type="text" name="ordernumber"  value={inputData.ordernumber} onChange={handleInputChange} required />
+            <div className="capitalize gap-1 grid grid-cols-3">
+               <Forminput label="DC Date" type="date" name="docdate" className=""  value={ inputData.docdate} onChange={handleInputChange} required />
+               <Forminput label="     Your Order Number" type="text" className=""  name="ordernumber"  value={inputData.ordernumber} onChange={handleInputChange} required />
                 <Forminput label="  Your Order Date" type="text" name="orderdate" value={ inputData.orderdate} onChange={handleInputChange} required />
             </div>
 
-            <div className="grid grid-cols-2 mt" >
+            <div className="grid gap-1 grid-cols-2 mt" >
                
                 <Forminput label="   Vehicle Number" type="text" name="vehiclenumber" value={inputData.vehiclenumber}  onChange={handleInputChange} required />
                 <Forminput label="   GST Number" type="text" name="gstnumber"  value={inputData.gstnumber}  onChange={handleInputChange} />
@@ -231,7 +232,7 @@ export default function Page() {
               ))}
             </tbody>
           </table>
-          <div className="flex justify-evenly  w-[70%]">
+          <div className="flex justify-evenly  w-[87%]">
             <p className="font-bold mt-2">Total Number of Qty : </p>
             <span className="  text-right mt-2 inline-block">
               {formData.items.reduce(
@@ -243,7 +244,9 @@ export default function Page() {
         </div>
 
         <div className="flex justify-center mt-4 gap-4">
-          <button type="submit" className="text-center cursor-pointer border-2 p-2 w-24 rounded-md bg-blue-500 text-white">Save</button>
+      
+          <button type="submit" className="text-center justify-center cursor-pointer border-2 flex items-center  p-2 w-24 rounded-md bg-blue-500 text-white">
+          <img src={"./img/save.png"} alt="" className="w-5 mr-1 h-5 text-white" />Save</button>
         </div>
 
      

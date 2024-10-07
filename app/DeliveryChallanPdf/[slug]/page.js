@@ -81,7 +81,7 @@ const QuotationPage = ({ params }) => {
 
   return (
     <div>
-      {/* <h1>Quotation Details</h1> */}
+     
       
       {quotation && (
         <div>
@@ -109,7 +109,7 @@ const QuotationPage = ({ params }) => {
        
        <div className="h-screen p-4 mx-auto overflow-y-auto">
       <div
-        className="w-full max-w-4xl mx-auto border-2 border-black"
+        className="w-full max-w-4xl mx-9 border-2 border-black"
         ref={pdfRef}
       >
       
@@ -236,9 +236,10 @@ const QuotationPage = ({ params }) => {
               </div>
             </div>
           </div>
+          
        
       </div>
-      <div className="mt-5 flex justify-between mx-9">
+      <div className="mt-5  mx-9  flex justify-between ">
         <Link href={`/edit?id=${params.slug}`} >
         <button   className="p-2 border-2 flex rounded-md items-center  bg-violet-600 text-white ">
         <ArrowLeftIcon className="w-4 h-4 mr-1" />
@@ -250,7 +251,7 @@ const QuotationPage = ({ params }) => {
        
         <button
           onClick={pdfDownload}
-          className="rounded-md p-2 border-2  flex items-center bg-red-500 text-white"
+          className="rounded-md p-2 border-2  flex items-center bg-green-500 text-white"
         >
           <ArrowDownTrayIcon className="w-4 h-4 mr-1" />
           Download

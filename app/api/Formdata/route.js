@@ -122,7 +122,7 @@ export async function POST(req) {
 
     // Prepare SQL for inserting items
     const insertItemSql = `
-      INSERT INTO items (quotation_id, name, hsn, qty, umoremarks, remarks)
+      INSERT INTO quoitems (quotation_id, name, hsn, qty, umoremarks, remarks)
       VALUES (?, ?, ?, ?, ?, ?);
     `;
     // Insert items

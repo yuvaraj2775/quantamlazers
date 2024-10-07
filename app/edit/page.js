@@ -12,6 +12,8 @@ import {
   PlusCircleIcon,
   BookmarkIcon,
   ViewfinderCircleIcon,
+  EyeIcon,
+  FolderArrowDownIcon
 } from "@heroicons/react/24/solid";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckIcon } from "@heroicons/react/24/outline";
@@ -23,7 +25,6 @@ import Losedialog from "./Losedialog";
 export default function Page({ params }) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
-  
   const [formData, setFormData] = useState({ items: [] ,items1:[] });
   const [fetchedData, setFetchedData] = useState(null);
   const router = useRouter();
@@ -124,8 +125,8 @@ export default function Page({ params }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formDataToSend = {
-      ...formData.items1, // This spreads the fields from items1
-      items: formData.items, // Keep the items for the table
+      ...formData.items1,
+      items: formData.items,
       quotation_id: fetchedData?.data?.id || null,
     };
   
@@ -139,8 +140,7 @@ export default function Page({ params }) {
       if (response.ok) {
         const result = await response.json();
         console.log("Update successful:", result);
-        setOpen(true);
-        router.push(`/DeliveryChallanPdf/${searchid}`)
+        setOpen(true); // Open the success dialog
       } else {
         throw new Error("Update failed");
       }
@@ -148,6 +148,7 @@ export default function Page({ params }) {
       console.error("Error during submission:", error);
     }
   };
+  
     const dated = formData.items1?.id
   return (
     <form
@@ -177,7 +178,7 @@ export default function Page({ params }) {
         </div>
 
         <div>
-          <div className="capitalize grid grid-cols-3">
+          <div className="capitalize gap-1 grid grid-cols-3">
             <Formitems
               label="DC Date"
               type="date"
@@ -187,7 +188,7 @@ export default function Page({ params }) {
               required
             />
             <Formitems
-              label="     Your Order Number"
+              label="Your Order Number"
               type="text"
               name="ordernumber"
               value={formData.items1?.ordernumber}
@@ -204,7 +205,7 @@ export default function Page({ params }) {
             />
           </div>
 
-          <div className="grid grid-cols-2 mt">
+          <div className="grid grid-cols-2 gap-1 mt">
             <Formitems
               label="   Vehicle Number"
               type="text"
@@ -238,7 +239,7 @@ export default function Page({ params }) {
         </div>
       </div>
 
-      <div className="border-2 border-gray-300 mt-5 rounded-lg overflow-x-auto shadow-sm">
+      <div className="border-2 border-gray-300  mt-5 rounded-lg overflow-x-auto shadow-sm">
           <table className="w-full">
             <thead className="bg-gray-200 font-semibold">
               <tr>
@@ -260,7 +261,7 @@ export default function Page({ params }) {
               ))}
             </tbody>
           </table>
-          <div className="flex justify-evenly  w-[70%]">
+          <div className="flex justify-evenly  w-[87%]">
             <p className="font-bold mt-2">Total Number of Qty : </p>
             <span className="  text-right mt-2 inline-block">
               {formData.items.reduce(
@@ -280,14 +281,15 @@ export default function Page({ params }) {
           
           className="text-center cursor-pointer border-2 p-2 w-24 flex items-center justify-center rounded-md bg-green-500 text-white"
         >
-          <PlusCircleIcon className="w-4 h-4 mr-1 mt-1" />
+          <PlusIcon className="w-5 h-5 mr-1 text-white" />
           New
         </button>
         <button
           type="submit"
           className="text-center cursor-pointer border-2 p-2 w-24 flex items-center justify-center rounded-md bg-blue-500 text-white"
         >
-          <BookmarkIcon className="w-4 h-4 mr-1 " />
+          {/* <FolderArrowDownIcon className="w-5 h-5 mr-1 " /> */}
+          <img src={"./img/save.png"} alt="" className="w-5 mr-1 h-5 text-white" />
           Save
         </button>
         <button
@@ -297,7 +299,7 @@ export default function Page({ params }) {
             router.push(`/DeliveryChallanPdf/${searchid}`); // Navigate to another page
           }}
         >
-          <ViewfinderCircleIcon    className="w-4 h-4 mr-1 mt-1" />
+          <EyeIcon    className="w-4 h-4 mr-1 " />
 
           View
         </button>
@@ -306,7 +308,14 @@ export default function Page({ params }) {
 
       
 
-        <Windialog open={open} onClose={() => setOpen(false)} dataId={dated} />
+        {/* <Windialog open={open} onClose={() => setOpen(false)} dataId={dated} /> */}
+        <Windialog 
+  open={open} 
+  onClose={() => setOpen(false)} 
+  dataId={dated} 
+  onRedirect={() => router.push(`/DeliveryChallanPdf/${searchid}`)} 
+/>
+
        
 
         <Losedialog open={deleteDialogOpen} onClose={cancelDelete} onDelete={handleDeleteRow} />
