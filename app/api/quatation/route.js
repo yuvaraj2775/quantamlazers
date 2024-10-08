@@ -43,6 +43,7 @@ async function initdb() {
                 taxtype TEXT,
                 percentage REAL,
                 taxamt REAL,
+                typeoftax REAL,
                 percentage2 REAL,
                 taxamt2 REAL,
                 FOREIGN KEY (Quotation_id) REFERENCES quatationform (id)
@@ -95,8 +96,8 @@ export async function POST(req) {
         const quotationId = result.lastID;
 
         const insertItems = `
-            INSERT INTO quoitems (Quotation_id, description, hsncode, qty, unit, taxableValue, taxtype, percentage, taxamt, percentage2, taxamt2)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO quoitems (Quotation_id, description, hsncode, qty, unit, taxableValue, taxtype, percentage, taxamt, percentage2, taxamt2,typeoftax)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         for (const item of items) {
@@ -112,6 +113,7 @@ export async function POST(req) {
                 item.taxamt,
                 item.percentage2,
                 item.taxamt2,
+                item.typeoftax,
             ]);
         }
 
