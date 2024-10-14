@@ -1,7 +1,9 @@
 "use client";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect } from "react";
+import { toWords } from 'number-to-words';
+
 import {
   Dialog,
   DialogBackdrop,
@@ -9,155 +11,234 @@ import {
   DialogTitle,
 } from "@headlessui/react";
 import { CheckIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
 
-const Page = () => {
+const page = () => {
+  const [fetchdata, setfetchdata] = useState(null);
+  const [formdata, setformdata] = useState({ items: [], items1: [] });
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const searchid = useSearchParams().get("id");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
-  const [input, setInput] = useState({
-    Address: "",
-    Date: "",
-    gstnumber: "",
-    kindattention: "",
-    reference: "",
-    subject: "",
-    discount: "",
-    transport: "",
-    packages: "",
-    othercost: "",
-  });
-  const [fetched, setfetched] = useState(null);
-  const [items, setItems] = useState([
-    {
-      description: "",
-      hsncode: "",
-      qty: "",
-      unit: "NOS",
-      unitCost: "",
-      taxableValue: "",
-      taxtype: "CGST",
-      percentage: "9",
-      taxamt: "",
-      typeoftax: "SGST",
-      percentage2: "9",
-      taxamt2: "",
-    },
-  ]);
-  const router = useRouter();
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setInput((prev) => ({ ...prev, [name]: value }));
+  const calculateTotals = () => {
+    const subtotal = formdata.items.reduce((sum, item) => {
+      const taxableValue = parseFloat(item.taxableValue) || 0;
+      return sum + taxableValue;
+    }, 0);
+
+  
+
+    const discountAmount =
+      (subtotal * (parseFloat(formdata.items1.discount) || 0)) / 100;
+
+    const totalCGST = formdata.items.reduce((sum, item) => {
+      return item.taxtype === "CGST"
+        ? sum + (parseFloat(item.taxamt) || 0)
+        : sum;
+    }, 0);
+
+    const totalSGST = formdata.items.reduce((sum, item) => {
+      return item.taxtype === "CGST"
+        ? sum + (parseFloat(item.taxamt2) || 0)
+        : sum;
+    }, 0);
+
+    const totalIGST = formdata.items.reduce((sum, item) => {
+      return item.taxtype === "IGST"
+        ? sum + (parseFloat(item.taxamt) || 0)
+        : sum;
+    }, 0);
+
+    const totalUGST = formdata.items.reduce((sum, item) => {
+      return item.taxtype === "UGST"
+        ? sum + (parseFloat(item.taxamt2) || 0)
+        : sum;
+    }, 0);
+
+    const packageCharges = parseFloat(formdata.items1.packageCharges) || 0;
+    const transportCharges = parseFloat(formdata.items1.transportCharges) || 0;
+    const otherCosts = parseFloat(formdata.items1.otherCosts) || 0;
+
+    const grandTotal =
+      subtotal -
+      discountAmount +
+      totalCGST +
+      totalSGST +
+      totalIGST +
+      totalUGST +
+      packageCharges +
+      transportCharges +
+      otherCosts;
+
+    return {
+      subTotal: subtotal,
+      discountAmount,
+      totalTax: totalCGST + totalSGST + totalIGST + totalUGST,
+      totalCGST: totalCGST || 0, // Ensure zero is returned
+      totalSGST: totalSGST || 0, // Ensure zero is returned
+      totalIGST: totalIGST || 0, // Ensure zero is returned
+      totalUGST: totalUGST || 0, // Ensure zero is returned
+      grandTotal,
+    };
   };
-  console.log("fn", fetched);
+
+  const totals = calculateTotals();
+  const fulltotals = {
+    grandTotal: parseFloat(totals.grandTotal.toFixed(2)), // Convert to a number
+    // other totals...
+  };
+
+  let grandTotalInWords = toWords(fulltotals.grandTotal);
+
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const response = await fetch("/api/quatation");
-        if (!response.ok) {
-          throw new Error("Failed to fetch data");
+      if (searchid) {
+        try {
+          const response = await fetch(`/api/quatation?id=${searchid}`);
+          if (!response.ok) throw new Error("Failed to fetch data");
+          const result = await response.json();
+          setformdata({
+            // ...result.data[0], // Update formData with the fetched data
+            items1: result.data || [],
+            items: result.itemdata || [],
+          });
+          setfetchdata(result);
+        } catch (error) {
+          console.error("Fetch failed:", error);
         }
-        const result = await response.json();
-        console.log("Fetched Data:", result);
-        setfetched(result);
-      } catch (error) {
-        console.error("Fetch failed:", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [searchid]);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+   
+    const formDataToSend = {
+      ...formdata.items1,
+      items: formdata.items,
+      quotationId: fetchdata?.data?.id || null,
+    };
+
+    try {
+      const response = await fetch(`/api/quatation?id=${searchid}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formDataToSend),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Update successful:", result);
+        setOpen(true)
+      } else {
+        throw new Error("Update failed");
+      }
+    } catch (error) {
+      console.error("Error during submission:", error);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name in formdata.items1) {
+      setformdata((prev) => ({
+        ...prev,
+        items1: {
+          ...prev.items1,
+          [name]: value,
+        },
+      }));
+    } else {
+      setformdata((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
   const handleItemChange = (index, e) => {
     const { name, value } = e.target;
-    const newItems = [...items];
-    newItems[index][name] = value;
+    const updatedItems = [...formdata.items];
 
-    // Reset tax amounts when changing tax types
+    // Update the item value
+    updatedItems[index] = {
+        ...updatedItems[index],
+        [name]: value,
+    };
+
+    // Handle tax type changes
     if (name === "taxtype") {
-      newItems[index].taxamt = "0.00"; // Reset CGST amount
-      newItems[index].taxamt2 = "0.00"; // Reset SGST/IGST/UGST amount
-
-      if (value === "CGST") {
-        newItems[index].percentage = "9";
-        newItems[index].percentage2 = "9"; // SGST percentage
-        newItems[index].taxamt = (
-          (parseFloat(newItems[index].taxableValue) * 9) /
-          100
-        ).toFixed(2); // Calculate CGST tax amount
-      } else if (value === "IGST") {
-        newItems[index].percentage = "18";
-        newItems[index].percentage2 = "0"; // No SGST
-        newItems[index].taxamt = "0.00"; // CGST amount
-        newItems[index].taxamt2 = (
-          (parseFloat(newItems[index].taxableValue) * 18) /
-          100
-        ).toFixed(2); // Calculate IGST tax amount
-      } else if (value === "UGST") {
-        newItems[index].percentage = "0"; // Assuming UGST has its percentage
-        newItems[index].percentage2 = "18"; // UGST percentage
-        newItems[index].taxamt = "0.00"; // CGST amount
-        newItems[index].taxamt2 = (
-          (parseFloat(newItems[index].taxableValue) * 18) /
-          100
-        ).toFixed(2); // Calculate UGST tax amount
-      }
+        // Reset tax amounts based on selected tax type
+        if (value === "CGST") {
+            updatedItems[index].percentage = "9";
+            updatedItems[index].percentage2 = "9"; // SGST percentage
+            updatedItems[index].taxamt = "0.00"; // Resetting taxamt for IGST
+            updatedItems[index].taxamt2 = "0.00"; // Resetting taxamt2 for IGST
+        } else if (value === "IGST") {
+            updatedItems[index].percentage = "18"; // Set IGST percentage
+            updatedItems[index].percentage2 = "0"; // No SGST
+            updatedItems[index].taxamt = "0.00"; // Resetting taxamt for CGST
+            updatedItems[index].taxamt2 = (
+                (parseFloat(updatedItems[index].taxableValue) * 18) / 100
+            ).toFixed(2); // Calculate IGST tax amount
+        }
     }
 
     // Update quantities and unit costs to recalculate taxable values and tax amounts
     if (name === "qty" || name === "unitCost") {
-      const qty = parseFloat(newItems[index].qty) || 0;
-      const unitCost = parseFloat(newItems[index].unitCost) || 0;
-      newItems[index].taxableValue = (qty * unitCost).toFixed(2);
+        const qty = parseFloat(updatedItems[index].qty) || 0;
+        const unitCost = parseFloat(updatedItems[index].unitCost) || 0;
+        updatedItems[index].taxableValue = (qty * unitCost).toFixed(2);
     }
 
     // Calculate tax amounts based on the current taxable value
-    const taxableValue = parseFloat(newItems[index].taxableValue) || 0;
-    const cgstPercentage = parseFloat(newItems[index].percentage) || 0;
-    const sgstPercentage = parseFloat(newItems[index].percentage2) || 0;
+    const taxableValue = parseFloat(updatedItems[index].taxableValue) || 0;
+    const cgstPercentage = parseFloat(updatedItems[index].percentage) || 0;
+    const sgstPercentage = parseFloat(updatedItems[index].percentage2) || 0;
 
     // Recalculate tax amounts based on selected tax type
-    if (newItems[index].taxtype === "CGST") {
-      newItems[index].taxamt = ((taxableValue * cgstPercentage) / 100).toFixed(
-        2
-      );
-      newItems[index].taxamt2 = ((taxableValue * sgstPercentage) / 100).toFixed(
-        2
-      ); // SGST
-    } else if (newItems[index].taxtype === "IGST") {
-      newItems[index].taxamt = "0.00"; // CGST to zero
-      newItems[index].taxamt2 = (
-        (taxableValue * (cgstPercentage + sgstPercentage)) /
-        100
-      ).toFixed(2);
-    } else if (newItems[index].taxtype === "UGST") {
-      newItems[index].taxamt = "0.00"; // CGST to zero
-      newItems[index].taxamt2 = ((taxableValue * sgstPercentage) / 100).toFixed(
-        2
-      ); // Calculate UGST tax amount
+    if (updatedItems[index].taxtype === "CGST") {
+        updatedItems[index].taxamt = (
+            (taxableValue * cgstPercentage) / 100
+        ).toFixed(2);
+        updatedItems[index].taxamt2 = (
+            (taxableValue * sgstPercentage) / 100
+        ).toFixed(2); // SGST
+    } else if (updatedItems[index].taxtype === "IGST") {
+        updatedItems[index].taxamt = (
+            (taxableValue * (cgstPercentage + sgstPercentage)) / 100
+        ).toFixed(2);
+        updatedItems[index].taxamt2 = "0.00"; // IGST does not have a second type tax amount
     }
 
-    setItems(newItems);
-  };
+    setformdata((prev) => ({ ...prev, items: updatedItems }));
+};
+
 
   const handleAddRow = () => {
-    setItems((prevItems) => [
-      ...prevItems,
-      {
-        description: "",
-        hsncode: "",
-        qty: "",
-        unit: "NOS",
-        unitCost: "",
-        taxableValue: "",
-        taxtype: "CGST",
-        percentage: "9",
-        taxamt: "",
-        typeoftax: "SGST",
-        percentage2: "9",
-        taxamt2: "",
-      },
-    ]);
+    setformdata((prev) => ({
+      ...prev,
+      items: [
+        ...prev.items,
+        {
+          description: "",
+          hsncode: "",
+          percentage: "9",
+          percentage2: "9",
+          taxableValue: "",
+          taxamt: "",
+          taxamt2: "",
+          unitCost: "",
+          unit: "NOS",
+          taxtype: "CGST",
+          typeoftax: "",
+          qty: "",
+        },
+      ],
+    }));
   };
 
   const openDeleteDialog = (index) => {
@@ -170,102 +251,39 @@ const Page = () => {
       handleDeleteRow(rowToDelete);
     }
   };
+
   const handleDeleteRow = (index) => {
-    setItems((prevItems) => prevItems.filter((_, i) => i !== index));
+    console.log(`Deleting item at index: ${index}`);
+    const newItems = formdata.items.filter((_, i) => i !== index);
+    setformdata((prev) => ({ ...prev, items: newItems }));
     setDeleteDialogOpen(false);
     setRowToDelete(null);
   };
 
+  
   const cancelDelete = () => {
     setDeleteDialogOpen(false);
     setRowToDelete(null);
   };
-
-  const calculateTotals = () => {
-    const subTotal = items.reduce(
-      (sum, item) => sum + parseFloat(item.taxableValue || 0),
-      0
-    );
-  
-    const totalTax = items.reduce(
-      (sum, item) =>
-        sum + (parseFloat(item.taxamt || 0) + parseFloat(item.taxamt2 || 0)),
-      0
-    );
-  
-    const discountAmount = subTotal * (input.discount / 100);
-    const packageCharges = parseFloat(input.packages || 0);
-    const transportCharges = parseFloat(input.transport || 0);
-    const otherCosts = parseFloat(input.othercost || 0);
-  
-    const grandTotal =
-      subTotal +
-      totalTax -
-      discountAmount +
-      packageCharges +
-      transportCharges +
-      otherCosts;
-  
-    return {
-      subTotal,
-      totalTax,
-      discountAmount,
-      grandTotal,
-      otherCosts,
-      transportCharges,
-      packageCharges,
-    };
-  };
-  
-
-  const dataed = fetched?.data.length ? fetched.data[0].id + 1 : null;
-  console.log(dataed, "jnj");
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // Ensure `dataed` is defined
-
-    const response = await fetch("/api/quatation", {
-      method: "POST",
-      body: JSON.stringify({ ...input, items }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const result = await response.json();
-    if (!response.ok) {
-      console.error("Error while submitting:", result.error);
-    } else {
-      console.log("Data added", result);
-      setOpen(true); // Open the dialog on success
-      // Reset input and items as needed
-    }
-  };
-  const totals = calculateTotals();
-
   return (
     <form
       onSubmit={handleSubmit}
-      className=" overflow-y-auto h-screen p-6 bg-white rounded-lg shadow-md"
+      className="overflow-y-auto h-screen p-6 bg-white rounded-lg shadow-md"
     >
       <div className="flex justify-between mb-4">
         <h1></h1>
-        <h1 className="text-xl  font-bold">Quotation Form</h1>
+        <h1 className="text-xl font-bold">Quotation Form</h1>
         <h2 className="text-lg">Quotation NO: Draft</h2>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label
-            htmlFor="Address"
-            className="block mb-1 text-sm font-semibold "
-          >
+          <label htmlFor="Address" className="block mb-1 text-sm font-semibold">
             Address
           </label>
           <textarea
             name="Address"
-            value={input.Address}
+            value={formdata?.items1.Address}
             onChange={handleInputChange}
             className="border border-gray-300 rounded-md w-full h-32 px-2 py-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
           />
@@ -275,7 +293,7 @@ const Page = () => {
             <div>
               <label
                 htmlFor="Date"
-                className="block mb-1 text-sm  font-semibold "
+                className="block mb-1 text-sm font-semibold"
               >
                 Date
               </label>
@@ -283,14 +301,14 @@ const Page = () => {
                 type="date"
                 className="border border-gray-300 rounded-md w-full h-10 px-2"
                 name="Date"
-                value={input.Date}
+                value={formdata?.items1.Date}
                 onChange={handleInputChange}
               />
             </div>
             <div>
               <label
                 htmlFor="reference"
-                className="block mb-1 text-sm  font-semibold"
+                className="block mb-1 text-sm font-semibold"
               >
                 Reference Number
               </label>
@@ -298,7 +316,7 @@ const Page = () => {
                 type="text"
                 className="border border-gray-300 rounded-md w-full h-10 px-2"
                 name="reference"
-                value={input.reference}
+                value={formdata?.items1.reference}
                 onChange={handleInputChange}
               />
             </div>
@@ -307,7 +325,7 @@ const Page = () => {
             <div>
               <label
                 htmlFor="gstnumber"
-                className="block mb-1 text-sm  font-semibold"
+                className="block mb-1 text-sm font-semibold"
               >
                 GST Number
               </label>
@@ -315,14 +333,14 @@ const Page = () => {
                 type="text"
                 className="border border-gray-300 rounded-md w-full h-10 px-2"
                 name="gstnumber"
-                value={input.gstnumber}
+                value={formdata?.items1.gstnumber}
                 onChange={handleInputChange}
               />
             </div>
             <div>
               <label
                 htmlFor="kindattention"
-                className="block mb-1 text-sm  font-semibold"
+                className="block mb-1 text-sm font-semibold"
               >
                 Kind Attention
               </label>
@@ -330,7 +348,7 @@ const Page = () => {
                 type="text"
                 className="border border-gray-300 rounded-md w-full h-10 px-2"
                 name="kindattention"
-                value={input.kindattention}
+                value={formdata?.items1.kindattention}
                 onChange={handleInputChange}
               />
             </div>
@@ -338,14 +356,14 @@ const Page = () => {
         </div>
       </div>
       <div>
-        <label htmlFor="subject" className="block mb-1 text-sm  font-semibold">
+        <label htmlFor="subject" className="block mb-1 text-sm font-semibold">
           Subject
         </label>
         <input
           type="text"
           className="border border-gray-300 rounded-md w-full h-10 px-2"
           name="subject"
-          value={input.subject}
+          value={formdata?.items1.subject}
           onChange={handleInputChange}
         />
       </div>
@@ -359,9 +377,9 @@ const Page = () => {
                 Item Name/Description
               </th>
               <th className="border border-gray-300 p-2">HSN Code</th>
-              <th className="border border-gray-300 p-2">Qty</th>
+              <th className="border border-gray-300 p-2 px-2 w-20">Qty</th>
               <th className="border border-gray-300 p-2">Unit</th>
-              <th className="border border-gray-300 p-2">Unit Cost</th>
+              <th className="border border-gray-300 p-2 px-2 w-20">Unit Cost</th>
               <th className="border border-gray-300 p-2">Taxable Value</th>
               <th className="border border-gray-300 p-2">Type of Tax</th>
               <th className="border border-gray-300 p-2">%</th>
@@ -373,7 +391,7 @@ const Page = () => {
             </tr>
           </thead>
           <tbody>
-            {items.map((item, index) => (
+            {formdata?.items.map((item, index) => (
               <tr key={index} className="border-b hover:bg-gray-50">
                 <td className="border border-gray-300 p-2 text-center">
                   {index + 1}
@@ -399,7 +417,7 @@ const Page = () => {
                 <td className="border border-gray-300 p-2">
                   <input
                     type="number"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
+                    className="border px-2 border-gray-300 w-20 rounded-md   h-10 "
                     name="qty"
                     value={item.qty}
                     onChange={(e) => handleItemChange(index, e)}
@@ -420,7 +438,7 @@ const Page = () => {
                 <td className="border border-gray-300 p-2">
                   <input
                     type="number"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
+                    className="border border-gray-300 rounded-md w-20 h-10 px-2"
                     name="unitCost"
                     value={item.unitCost}
                     onChange={(e) => handleItemChange(index, e)}
@@ -498,10 +516,13 @@ const Page = () => {
                 </td>
                 <td className="border border-gray-300 p-2">
                   <div className="flex justify-center">
-                    <button className="" onClick={handleAddRow}>
+                    <button type="button" onClick={() => handleAddRow()}>
                       <PlusIcon className="w-4 h-4" />
                     </button>
-                    <button onClick={() => openDeleteDialog(index)}>
+                    <button
+                      type="button"
+                      onClick={() => openDeleteDialog(index)}
+                    >
                       <XMarkIcon className="w-4 h-4" />
                     </button>
                   </div>
@@ -516,7 +537,10 @@ const Page = () => {
             Total Number of Quantities:
           </label>
           <p>
-            {items.reduce((sum, item) => sum + (parseInt(item.qty) || 0), 0)}
+            {formdata?.items.reduce(
+              (sum, item) => sum + (parseInt(item.qty) || 0),
+              0
+            )}
           </p>
         </div>
       </div>
@@ -528,7 +552,7 @@ const Page = () => {
           <input
             type="number"
             name="discount"
-            value={input.discount}
+            value={formdata?.items1.discount}
             onChange={handleInputChange}
             className="border border-gray-300 h-10 rounded-md w-full px-2"
           />
@@ -537,8 +561,8 @@ const Page = () => {
           <label className="text-sm  font-semibold">Package Charges</label>
           <input
             type="number"
-            name="packages"
-            value={input.packages}
+            name="packageCharges"
+            value={formdata?.items1.packageCharges}
             onChange={handleInputChange}
             className="border border-gray-300 h-10 rounded-md w-full px-2"
           />
@@ -549,8 +573,8 @@ const Page = () => {
           </label>
           <input
             type="number"
-            name="transport"
-            value={input.transport}
+            name="transportCharges"
+            value={formdata?.items1.transportCharges}
             onChange={handleInputChange}
             className="border border-gray-300 h-10 rounded-md w-full px-2"
           />
@@ -559,127 +583,121 @@ const Page = () => {
           <label className="text-sm  font-semibold">Other Cost</label>
           <input
             type="number"
-            name="othercost"
-            value={input.othercost}
+            name="otherCosts"
+            value={formdata?.items1.otherCosts}
             onChange={handleInputChange}
             className="border border-gray-300 h-10 rounded-md w-full px-2"
           />
         </div>
       </div>
-
-      {/* Summary Section */}
-      <div className="grid grid-cols-2 gap-4 mt-5">
-  <div>
-    <div>
-      <span className="text-sm font-semibold">Grand Total (In Words)</span>
-      <p>{/* Placeholder for grand total in words */}</p>
-    </div>
-    <div>
-      <span className="text-sm font-semibold">Tax Amount</span>
       <div className="grid grid-cols-2">
         <div>
-          <label>CGST:</label>
-          <p>{(totals.totalTax > 0 && items.some(item => item.taxtype === "CGST")) ? (totals.totalTax / 2).toFixed(2) : "0.00"}</p>
+          <div>
+            <div>
+              <span className="text-sm font-semibold">
+                Grand Total (In Words)
+              </span>
+              <p>
+            {grandTotalInWords}
+              </p>
+            </div>
+            <div>
+              <span className="text-sm font-semibold">Tax Amount</span>
+              <div className="grid grid-cols-2">
+                <div>
+                  <label>CGST:</label>
+                  <p>{totals.totalCGST.toFixed(2)}</p>{" "}
+                  {/* Use calculated CGST value */}
+                </div>
+                <div>
+                  <label>IGST:</label>
+                  <p>{totals.totalIGST.toFixed(2)}</p>{" "}
+                  {/* Use calculated IGST value */}
+                </div>
+              </div>
+              <div className="grid grid-cols-2">
+                <div>
+                  <label>SGST:</label>
+                  <p>{totals.totalSGST.toFixed(2)}</p>{" "}
+                  {/* Use calculated SGST value */}
+                </div>
+                <div>
+                  <label>UGST:</label>
+                  <p>{totals.totalUGST.toFixed(2)}</p>{" "}
+                  {/* Use calculated UGST value */}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div>
-          <label>IGST:</label>
-          <p>{(totals.totalTax > 0 && items.every(item => item.taxtype === "IGST")) ? totals.totalTax.toFixed(2) : "0.00"}</p>
+          <div className="grid grid-cols-2">
+            <p>Sub-Total Amt</p>
+            <p>{totals.subTotal.toFixed(2)}</p>
+          </div>
+          <div className="grid grid-cols-2">
+            <p>Discount ({formdata.items1.discount} %)</p>
+            <p>{totals.discountAmount.toFixed(2)}</p>
+          </div>
+          <div className="grid grid-cols-2">
+            <p>Total CGST</p>
+            <p>{totals.totalCGST > 0 ? totals.totalCGST.toFixed(2) : "0.00"}</p>
+          </div>
+          <div className="grid grid-cols-2">
+            <p>Total SGST</p>
+            <p>{totals.totalTax.toFixed(2)}</p>
+          </div>
+          <div className="grid grid-cols-2">
+            <p>Total IGST</p>
+            <p>{totals.totalIGST > 0 ? totals.totalIGST.toFixed(2) : "0.00"}</p>
+          </div>
+          <div className="grid grid-cols-2">
+            <p>Total UGST</p>
+            <p>{totals.totalUGST > 0 ? totals.totalUGST.toFixed(2) : "0.00"}</p>
+          </div>
+          <div className="grid grid-cols-2">
+            <p>Package Charges</p>
+            <p>{formdata.items1.packageCharges}</p>
+          </div>
+          <div className="grid grid-cols-2">
+            <p>Transportation Charges</p>
+            <p>{formdata.items1.transportCharges}</p>
+          </div>
+          <div className="grid grid-cols-2">
+            <p>Other Cost</p>
+            <p>{formdata.items1.otherCosts}</p>
+          </div>
+          <div className="grid grid-cols-2">
+            <p>Grand Total (RS)</p>
+            <p>{totals.grandTotal.toFixed(2)}</p>
+          </div>
         </div>
       </div>
-      <div className="grid grid-cols-2">
-        <div>
-          <label>SGST:</label>
-          <p>{(totals.totalTax > 0 && items.some(item => item.taxtype === "CGST")) ? (totals.totalTax / 2).toFixed(2) : "0.00"}</p>
-        </div>
-        <div>
-          <label>UGST:</label>
-          <p>{(totals.totalTax > 0 && items.every(item => item.taxtype === "UGST")) ? totals.totalTax.toFixed(2) : "0.00"}</p>
-        </div>
-      </div>
+
+  <div className="flex justify-center" >
+    <div>
+      <Link  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600" href={`/Quatation`} >
+        New
+      </Link>
+    <button
+        type="submit"
+        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+      >
+        Submit
+      </button>
+      <Link
+        type="submit"
+        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        href={`/quotationchallanpdf/${searchid}`}
+      >
+        view
+      </Link>
+   
     </div>
+
   </div>
-  <div>
-    <div className="grid grid-cols-2">
-      <p>Sub-Total Amt</p>
-      <p>{totals.subTotal.toFixed(2)}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>Discount ({input.discount} %)</p>
-      <p>{totals.discountAmount.toFixed(2)}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>CGST</p>
-      <p>{(totals.totalTax > 0 && items.some(item => item.taxtype === "CGST")) ? (totals.totalTax / 2).toFixed(2) : "0.00"}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>SGST</p>
-      <p>{(totals.totalTax > 0 && items.some(item => item.taxtype === "CGST")) ? (totals.totalTax / 2).toFixed(2) : "0.00"}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>IGST</p>
-      <p>{(totals.totalTax > 0 && items.every(item => item.taxtype === "IGST")) ? totals.totalTax.toFixed(2) : "0.00"}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>UGST</p>
-      <p>{(totals.totalTax > 0 && items.every(item => item.taxtype === "UGST")) ? totals.totalTax.toFixed(2) : "0.00"}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>Package Charges</p>
-      <p>{input.packages}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>Transportation Charges</p>
-      <p>{input.transport}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>Other Cost</p>
-      <p>{input.othercost}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>Grand Total (RS)</p>
-      <p>{totals.grandTotal.toFixed(2)}</p>
-    </div>
-  </div>
-</div>
 
-
-      {/* Payment Terms Section */}
-      <div className="mt-5">
-        <h1 className="text-sm  font-semibold">Payment Terms</h1>
-        <div className="border border-gray-300 p-4">
-          <input
-            type="text"
-            placeholder="Enter Payment Term 1"
-            className="border border-gray-300 rounded-md w-full mb-2 h-10 px-2"
-          />
-          <input
-            type="text"
-            placeholder="Enter Payment Term 2"
-            className="border border-gray-300 rounded-md w-full mb-2 h-10 px-2"
-          />
-          <input
-            type="text"
-            placeholder="Enter Payment Term 3"
-            className="border border-gray-300 rounded-md w-full mb-2 h-10 px-2"
-          />
-          <input
-            type="text"
-            placeholder="Enter Payment Term 4"
-            className="border border-gray-300 rounded-md w-full mb-2 h-10 px-2"
-          />
-        </div>
-      </div>
-      <div className="mt-5 flex justify-center">
-        <button
-          type="submit"
-          className="bg-blue-600 r text-white rounded-md px-4 py-2"
-        >
-          Save
-        </button>
-      </div>
-
-      {/* Dialog Component */}
-      <Dialog
+  <Dialog
         open={open}
         onClose={() => setOpen(false)}
         className="relative z-10"
@@ -697,7 +715,7 @@ const Page = () => {
                     as="h3"
                     className="text-base font-semibold leading-6 text-gray-900"
                   >
-                    Quotation Number {dataed}
+                    Quotation Number {searchid}
                   </DialogTitle>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
@@ -710,7 +728,7 @@ const Page = () => {
               <div className="mt-5 sm:mt-6">
                 <button
                   type="button"
-                  onClick={() => router.push(`/quotationchallanpdf/${dataed}`)}
+                  onClick={() => router.push(`/quotationchallanpdf/${searchid}`)}
                   className="inline-flex w-full justify-center"
                 >
                   <span className="bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 rounded-md">
@@ -722,6 +740,7 @@ const Page = () => {
           </div>
         </div>
       </Dialog>
+
 
       <Dialog
         open={deleteDialogOpen}
@@ -754,4 +773,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default page;
