@@ -12,7 +12,7 @@ const FormInput = ({ label, type, name, value, onChange, required }) => (
         name={name}
         value={value}
         onChange={onChange}
-        required={required}
+     
       />
     ) : (
       <input
@@ -21,7 +21,7 @@ const FormInput = ({ label, type, name, value, onChange, required }) => (
         name={name}
         value={value}
         onChange={onChange}
-        required={required}
+       
       />
     )}
   </div>

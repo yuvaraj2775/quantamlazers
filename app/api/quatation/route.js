@@ -30,7 +30,12 @@ async function initdb() {
         packageCharges REAL,
         transportCharges REAL,
         discount REAL,
-        otherCosts REAL
+        otherCosts REAL,
+        term1 TEXT,
+        term2 TEXT,
+        term3 TEXT,
+        term4 TEXT,
+         grandTotal INTEGER
       )
     `);
 
@@ -77,6 +82,11 @@ export async function POST(req) {
       transport,
       discount,
       othercost,
+      term1,
+      term2,
+      term3,
+      term4,
+      
       items,
     } = dts;
 
@@ -92,6 +102,10 @@ export async function POST(req) {
       !transport ||
       !discount ||
       !othercost ||
+      !term1 ||
+       !term2 ||
+        !term3 ||
+        !term4 ||
       !Array.isArray(items)
     ) {
       return NextResponse.json(
@@ -104,8 +118,8 @@ export async function POST(req) {
 
     const insertQuotation = `
       INSERT INTO quatationform 
-      (Address, Date, gstnumber, kindattention, reference, subject, packageCharges, transportCharges, discount, otherCosts)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (Address, Date, gstnumber, kindattention, reference, subject, packageCharges, transportCharges, discount, otherCosts,term1,term2,term3,term4)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const result = await db.run(insertQuotation, [
       Address,
@@ -118,6 +132,10 @@ export async function POST(req) {
       transport,
       discount,
       othercost,
+      term1,
+      term2,
+      term3,
+       term4
     ]);
     const quotationId = result.lastID;
 
@@ -214,19 +232,18 @@ export async function PUT(req) {
     const data = await req.json();
     console.log("Received data:", data);
 
-    const { quotationId, ...formdata } = data;
+    const { quotationId, grandTotal, ...formdata } = data; // Destructure grandTotal
 
     db = await opendb();
-
-    // Start a transaction
     await db.run("BEGIN TRANSACTION");
 
-    // Update the quotation form data
     const updateQuotationSql = `
       UPDATE quatationform 
       SET Address = ?, Date = ?, gstnumber = ?, kindattention = ?, 
           reference = ?, subject = ?, packageCharges = ?, 
-          transportCharges = ?, discount = ?, otherCosts = ? 
+          transportCharges = ?, discount = ?, otherCosts = ?, 
+          term1 = ?, term2 = ?, term3 = ?, term4 = ?, 
+          grandTotal = ?  -- Add this line to update grandTotal
       WHERE id = ?
     `;
 
@@ -241,14 +258,17 @@ export async function PUT(req) {
       formdata.transportCharges,
       formdata.discount,
       formdata.otherCosts,
+      formdata.term1,
+      formdata.term2,
+      formdata.term3,
+      formdata.term4,
+      grandTotal,  // Include grandTotal here
       quotationId,
     ]);
 
-    // Remove existing items related to the quotation
     await db.run(`DELETE FROM quoitems WHERE Quotation_id = ?`, [quotationId]);
     console.log("Deleted previous items for quotation:", quotationId);
 
-    // Insert new items
     const insertItems = `
       INSERT INTO quoitems 
       (Quotation_id, description, hsncode, qty, unit, taxableValue, taxtype, 
@@ -256,7 +276,6 @@ export async function PUT(req) {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    // Use Promise.all to insert all items concurrently
     await Promise.all(formdata.items.map(item => 
       db.run(insertItems, [
         quotationId,
@@ -275,21 +294,21 @@ export async function PUT(req) {
       ])
     ));
 
-    // Commit the transaction
     await db.run("COMMIT");
-
     return NextResponse.json({ message: "Data updated successfully" });
   } catch (error) {
     console.error("Error during operation:", error);
-    await db.run("ROLLBACK"); // Roll back the transaction on error
+    await db.run("ROLLBACK");
     return NextResponse.json({ error: "Database error: " + error.message });
   } finally {
     if (db) {
       await db.close();
-      console.log("Closed the database");
+      console.log("Closed the database"); 
     }
   }
 }
+
+
 
 
 

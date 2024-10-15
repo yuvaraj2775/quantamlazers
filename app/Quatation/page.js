@@ -9,8 +9,16 @@ import {
   DialogTitle,
 } from "@headlessui/react";
 import { CheckIcon } from "@heroicons/react/24/outline";
+import { useForm } from "react-hook-form";
+import { toWords } from "number-to-words";
 
 const Page = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
   const [open, setOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
@@ -25,6 +33,10 @@ const Page = () => {
     transport: "",
     packages: "",
     othercost: "",
+    term1: "",
+    term2: "",
+    term3: "",
+    term4: "",
   });
   const [fetched, setfetched] = useState(null);
   const [items, setItems] = useState([
@@ -141,8 +153,8 @@ const Page = () => {
   };
 
   const handleAddRow = () => {
-    setItems((prevItems) => [
-      ...prevItems,
+    setItems([
+      ...items,
       {
         description: "",
         hsncode: "",
@@ -159,6 +171,8 @@ const Page = () => {
       },
     ]);
   };
+  
+  
 
   const openDeleteDialog = (index) => {
     setRowToDelete(index);
@@ -186,18 +200,18 @@ const Page = () => {
       (sum, item) => sum + parseFloat(item.taxableValue || 0),
       0
     );
-  
+
     const totalTax = items.reduce(
       (sum, item) =>
         sum + (parseFloat(item.taxamt || 0) + parseFloat(item.taxamt2 || 0)),
       0
     );
-  
+
     const discountAmount = subTotal * (input.discount / 100);
     const packageCharges = parseFloat(input.packages || 0);
     const transportCharges = parseFloat(input.transport || 0);
     const otherCosts = parseFloat(input.othercost || 0);
-  
+
     const grandTotal =
       subTotal +
       totalTax -
@@ -205,7 +219,7 @@ const Page = () => {
       packageCharges +
       transportCharges +
       otherCosts;
-  
+
     return {
       subTotal,
       totalTax,
@@ -216,37 +230,39 @@ const Page = () => {
       packageCharges,
     };
   };
-  
+
+
 
   const dataed = fetched?.data.length ? fetched.data[0].id + 1 : null;
   console.log(dataed, "jnj");
+  const onSubmit = async (data) => {
+    try {
+      const response = await fetch("/api/quatation", {
+        method: "POST",
+        body: JSON.stringify({ ...input, items }), // Send form data with items
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    // Ensure `dataed` is defined
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Something went wrong");
+      }
 
-    const response = await fetch("/api/quatation", {
-      method: "POST",
-      body: JSON.stringify({ ...input, items }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const result = await response.json();
-    if (!response.ok) {
-      console.error("Error while submitting:", result.error);
-    } else {
       console.log("Data added", result);
       setOpen(true); // Open the dialog on success
-      // Reset input and items as needed
+      // Optionally reset the form and items
+    } catch (error) {
+      console.error("Error while submitting:", error);
     }
   };
   const totals = calculateTotals();
+  let grandTotalInWords = toWords(totals.grandTotal);
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
       className=" overflow-y-auto h-screen p-6 bg-white rounded-lg shadow-md"
     >
       <div className="flex justify-between mb-4">
@@ -266,9 +282,13 @@ const Page = () => {
           <textarea
             name="Address"
             value={input.Address}
+            {...register("Address", { required: "Address is required" })}
             onChange={handleInputChange}
-            className="border border-gray-300 rounded-md w-full h-32 px-2 py-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+            className="border border-gray-300 uppercase text-sm rounded-md w-full h-32 px-2 py-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
           />
+          {errors.Address && (
+            <p className="text-red-500">{errors.Address.message}</p>
+          )}
         </div>
         <div>
           <div className="grid grid-cols-2 gap-4 mb-4">
@@ -281,11 +301,15 @@ const Page = () => {
               </label>
               <input
                 type="date"
-                className="border border-gray-300 rounded-md w-full h-10 px-2"
+                className="border border-gray-300 uppercase rounded-md w-full h-10 px-2"
                 name="Date"
+                {...register("Date", { required: "Date is required" })}
                 value={input.Date}
                 onChange={handleInputChange}
               />
+              {errors.Date && (
+                <p className="text-red-500">{errors.Date.message}</p>
+              )}
             </div>
             <div>
               <label
@@ -296,28 +320,40 @@ const Page = () => {
               </label>
               <input
                 type="text"
-                className="border border-gray-300 rounded-md w-full h-10 px-2"
+                className="border border-gray-300 text-sm uppercase rounded-md w-full h-10 px-2"
                 name="reference"
+                {...register("reference", {
+                  required: "Reference number is required",
+                })}
                 value={input.reference}
                 onChange={handleInputChange}
               />
+              {errors.reference && (
+                <p className="text-red-500">{errors.reference.message}</p>
+              )}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label
                 htmlFor="gstnumber"
-                className="block mb-1 text-sm  font-semibold"
+                className="block mb-1 uppercase text-sm  font-semibold"
               >
                 GST Number
               </label>
               <input
                 type="text"
-                className="border border-gray-300 rounded-md w-full h-10 px-2"
+                className="border border-gray-300 text-sm uppercase rounded-md w-full h-10 px-2"
+                {...register("gstnumber", {
+                  required: "GST number is required",
+                })}
                 name="gstnumber"
                 value={input.gstnumber}
                 onChange={handleInputChange}
               />
+              {errors.gstnumber && (
+                <p className="text-red-500">{errors.gstnumber.message}</p>
+              )}
             </div>
             <div>
               <label
@@ -328,11 +364,17 @@ const Page = () => {
               </label>
               <input
                 type="text"
-                className="border border-gray-300 rounded-md w-full h-10 px-2"
+                className="border border-gray-300 text-sm uppercase rounded-md w-full h-10 px-2"
                 name="kindattention"
+                {...register("kindattention", {
+                  required: "Kind Attention is required",
+                })}
                 value={input.kindattention}
                 onChange={handleInputChange}
               />
+              {errors.kindattention && (
+                <p className="text-red-500">{errors.kindattention.message}</p>
+              )}
             </div>
           </div>
         </div>
@@ -343,7 +385,7 @@ const Page = () => {
         </label>
         <input
           type="text"
-          className="border border-gray-300 rounded-md w-full h-10 px-2"
+          className="border border-gray-300 text-sm uppercase rounded-md w-full h-10 px-2"
           name="subject"
           value={input.subject}
           onChange={handleInputChange}
@@ -381,16 +423,22 @@ const Page = () => {
                 <td className="border border-gray-300 p-2">
                   <input
                     type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
+                    className="border w-52 capitalize border-gray-300 rounded-md   h-10 px-2"
                     name="description"
                     value={item.description}
+                    {...register("description", {
+                      required: "Description is required",
+                    })}
                     onChange={(e) => handleItemChange(index, e)}
                   />
+                  {errors.description && (
+                    <p className="text-red-500">{errors.description.message}</p>
+                  )}
                 </td>
                 <td className="border border-gray-300 p-2">
                   <input
                     type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
+                    className="border w-20 border-gray-300 rounded-md  h-10 px-2"
                     name="hsncode"
                     value={item.hsncode}
                     onChange={(e) => handleItemChange(index, e)}
@@ -399,18 +447,22 @@ const Page = () => {
                 <td className="border border-gray-300 p-2">
                   <input
                     type="number"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
+                    className="border border-gray-300 text-right rounded-md w-24 h-10 px-2"
                     name="qty"
                     value={item.qty}
+                    {...register("qty", { required: "QTY is required" })}
                     onChange={(e) => handleItemChange(index, e)}
                   />
+                  {errors.qty && (
+                    <p className="text-red-500">{errors.qty.message}</p>
+                  )}
                 </td>
-                <td className="border border-gray-300 p-2">
+                <td className="border border-gray-300 p-2 w-16">
                   <select
                     name="unit"
                     onChange={(e) => handleItemChange(index, e)}
                     value={item.unit}
-                    className="border border-gray-300 rounded-md h-10 w-full"
+                    className="border border-gray-300 rounded-md h-10 w-16"
                   >
                     <option value="NOS">NOS</option>
                     <option value="EACH">EACH</option>
@@ -420,25 +472,31 @@ const Page = () => {
                 <td className="border border-gray-300 p-2">
                   <input
                     type="number"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
+                    className="border border-gray-300 rounded-md  text-right w-24 h-10 px-2"
                     name="unitCost"
+                    {...register("unitCost", {
+                      required: "unitCost is required",
+                    })}
                     value={item.unitCost}
                     onChange={(e) => handleItemChange(index, e)}
                   />
+                  {errors.unitCost && (
+                    <p className="text-red-500">{errors.unitCost.message}</p>
+                  )}
                 </td>
                 <td className="border border-gray-300 p-2">
                   <input
                     type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
+                    className="border text-right border-gray-300 rounded-md w-full h-10 px-2"
                     name="taxableValue"
                     value={item.taxableValue}
                     readOnly
                   />
                 </td>
-                <td className="border border-gray-300 p-2">
+                <td className="border border-gray-300 p-2 w-16">
                   <select
                     name="taxtype"
-                    className="border border-gray-300 rounded-md h-10 w-full"
+                    className="border border-gray-300 rounded-md w-16 h-10 "
                     onChange={(e) => handleItemChange(index, e)}
                     value={item.taxtype}
                   >
@@ -446,30 +504,30 @@ const Page = () => {
                     <option value="IGST">IGST</option>
                   </select>
                 </td>
-                <td className="border border-gray-300 p-2">
+                <td className="border border-gray-300 p-2 w-10">
                   <input
                     type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
+                    className="border border-gray-300 rounded-md w-10 text-right h-10 px-2"
                     name="percentage"
                     value={item.percentage}
                     onChange={(e) => handleItemChange(index, e)}
                   />
                 </td>
-                <td className="border border-gray-300 p-2">
+                <td className="border border-gray-300 p-2 w-16">
                   <input
                     type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
+                    className="border border-gray-300 rounded-md w-16 text-right h-10 px-2"
                     name="taxamt"
                     value={item.taxamt}
                     readOnly
                   />
                 </td>
-                <td className="border border-gray-300 p-2">
+                <td className="border border-gray-300 p-2 w-16">
                   <select
                     name="typeoftax"
                     onChange={(e) => handleItemChange(index, e)}
                     value={item.typeoftax}
-                    className="border border-gray-300 rounded-md h-10 w-full"
+                    className="border border-gray-300 rounded-md h-10 w-16"
                   >
                     {item.taxtype === "CGST" ? (
                       <option value="SGST">SGST</option>
@@ -478,46 +536,74 @@ const Page = () => {
                     )}
                   </select>
                 </td>
-                <td className="border border-gray-300 p-2">
+                <td className="border border-gray-300 p-2 w-14">
                   <input
                     type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
+                    className="border border-gray-300 rounded-md w-14 text-right h-10 px-2"
                     name="percentage2"
                     value={item.percentage2}
                     onChange={(e) => handleItemChange(index, e)}
                   />
                 </td>
-                <td className="border border-gray-300 p-2">
+                <td className="border border-gray-300 p-2 w-14">
                   <input
                     type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
+                    className="border border-gray-300 rounded-md w-14 text-right h-10 px-2"
                     name="taxamt2"
                     value={item.taxamt2}
                     readOnly
                   />
                 </td>
-                <td className="border border-gray-300 p-2">
-                  <div className="flex justify-center">
-                    <button className="" onClick={handleAddRow}>
-                      <PlusIcon className="w-4 h-4" />
+                <td className="flex justify-center items-center mt-3 border-gray-300 space-x-2 px-2">
+                  <button
+                    type="button"
+                    onClick={handleAddRow}
+                    className="flex items-center justify-center w-8 h-8 text-green-700 bg-green-100 rounded-full hover:bg-green-200 transition"
+                    title="Add Row"
+                  >
+                    <PlusIcon className="w-5 h-5" />
+                  </button>
+                  {index === 0 ? ( // Disable delete button for the first row
+                    <button
+                      type="button"
+                      className="flex items-center justify-center w-8 h-8 text-gray-400 bg-gray-200 rounded-full"
+                      title="First row cannot be deleted"
+                      disabled
+                    >
+                      <XMarkIcon className="w-5 h-5" />
                     </button>
-                    <button onClick={() => openDeleteDialog(index)}>
-                      <XMarkIcon className="w-4 h-4" />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => openDeleteDialog(index)} // Open delete dialog for other rows
+                      className="flex items-center justify-center w-8 h-8 text-red-900 bg-red-100 rounded-full hover:bg-red-200 transition"
+                      title="Delete Row"
+                    >
+                      <XMarkIcon className="w-5 h-5" />
                     </button>
-                  </div>
+                  )}
                 </td>
               </tr>
             ))}
+            <tr>
+              <td></td>
+              <td>
+              <label className="text-sm font-semibold">
+            Total Number of Quantities:
+          </label>
+              </td>
+              <td></td>
+              <td className="text-right pr-8">
+              <p>
+            {items.reduce((sum, item) => sum + (parseInt(item.qty) || 0), 0)}
+          </p>
+              </td>
+            </tr>
           </tbody>
         </table>
 
         <div className="mt-4">
-          <label className="text-sm font-semibold">
-            Total Number of Quantities:
-          </label>
-          <p>
-            {items.reduce((sum, item) => sum + (parseInt(item.qty) || 0), 0)}
-          </p>
+        
         </div>
       </div>
 
@@ -569,79 +655,120 @@ const Page = () => {
 
       {/* Summary Section */}
       <div className="grid grid-cols-2 gap-4 mt-5">
-  <div>
-    <div>
-      <span className="text-sm font-semibold">Grand Total (In Words)</span>
-      <p>{/* Placeholder for grand total in words */}</p>
-    </div>
-    <div>
-      <span className="text-sm font-semibold">Tax Amount</span>
-      <div className="grid grid-cols-2">
         <div>
-          <label>CGST:</label>
-          <p>{(totals.totalTax > 0 && items.some(item => item.taxtype === "CGST")) ? (totals.totalTax / 2).toFixed(2) : "0.00"}</p>
+          <div>
+            <span className="text-sm font-semibold">
+              Grand Total (In Words)
+            </span>
+            <p className="capitalize">{grandTotalInWords}</p>
+          </div>
+          <div>
+            <span className="text-sm font-semibold">Tax Amount</span>
+            <div className="grid grid-cols-2">
+              <div>
+                <label className="text-sm" >CGST:</label>
+                <p className="text-sm" >
+                  {totals.totalTax > 0 &&
+                  items.some((item) => item.taxtype === "CGST")
+                    ? (totals.totalTax / 2).toFixed(2)
+                    : "0.00"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm" >IGST:</label>
+                <p className="text-sm" >
+                  {totals.totalTax > 0 &&
+                  items.every((item) => item.taxtype === "IGST")
+                    ? totals.totalTax.toFixed(2)
+                    : "0.00"}
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 mt-2">
+              <div>
+                <label className="text-sm" >SGST:</label>
+                <p className="text-sm" >
+                  {totals.totalTax > 0 &&
+                  items.some((item) => item.taxtype === "CGST")
+                    ? (totals.totalTax / 2).toFixed(2)
+                    : "0.00"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm" >UGST:</label>
+                <p className="text-sm" >
+                  {totals.totalTax > 0 &&
+                  items.every((item) => item.taxtype === "UGST")
+                    ? totals.totalTax.toFixed(2)
+                    : "0.00"}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
         <div>
-          <label>IGST:</label>
-          <p>{(totals.totalTax > 0 && items.every(item => item.taxtype === "IGST")) ? totals.totalTax.toFixed(2) : "0.00"}</p>
+          <div className="grid grid-cols-2">
+            <p className="text-sm" >Sub-Total Amt</p>
+            <p className="text-sm" >{totals.subTotal.toFixed(2)}</p>
+          </div>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm" >Discount ({input.discount} %)</p>
+            <p className="text-sm" >{totals.discountAmount.toFixed(2)}</p>
+          </div>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm" >CGST</p>
+            <p className="text-sm" >
+              {totals.totalTax > 0 &&
+              items.some((item) => item.taxtype === "CGST")
+                ? (totals.totalTax / 2).toFixed(2)
+                : "0.00"}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm" >SGST</p>
+            <p className="text-sm" >
+              {totals.totalTax > 0 &&
+              items.some((item) => item.taxtype === "CGST")
+                ? (totals.totalTax / 2).toFixed(2)
+                : "0.00"}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm" >IGST</p>
+            <p className="text-sm" >
+              {totals.totalTax > 0 &&
+              items.every((item) => item.taxtype === "IGST")
+                ? totals.totalTax.toFixed(2)
+                : "0.00"}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm" >UGST</p>
+            <p className="text-sm" >
+              {totals.totalTax > 0 &&
+              items.every((item) => item.taxtype === "UGST")
+                ? totals.totalTax.toFixed(2)
+                : "0.00"}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm" >Package Charges</p>
+            <p className="text-sm" >{input.packages || 0}</p>
+          </div>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm" >Transportation Charges</p>
+            <p className="text-sm" >{input.transport ||0.00}</p>
+          </div>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm" >Other Cost</p>
+            <p className="text-sm" >{input.othercost || 0}</p>
+          </div>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm" >Grand Total (RS)</p>
+            <p className="text-sm" >{totals.grandTotal.toFixed(2)}</p>
+          </div>
         </div>
       </div>
-      <div className="grid grid-cols-2">
-        <div>
-          <label>SGST:</label>
-          <p>{(totals.totalTax > 0 && items.some(item => item.taxtype === "CGST")) ? (totals.totalTax / 2).toFixed(2) : "0.00"}</p>
-        </div>
-        <div>
-          <label>UGST:</label>
-          <p>{(totals.totalTax > 0 && items.every(item => item.taxtype === "UGST")) ? totals.totalTax.toFixed(2) : "0.00"}</p>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div>
-    <div className="grid grid-cols-2">
-      <p>Sub-Total Amt</p>
-      <p>{totals.subTotal.toFixed(2)}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>Discount ({input.discount} %)</p>
-      <p>{totals.discountAmount.toFixed(2)}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>CGST</p>
-      <p>{(totals.totalTax > 0 && items.some(item => item.taxtype === "CGST")) ? (totals.totalTax / 2).toFixed(2) : "0.00"}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>SGST</p>
-      <p>{(totals.totalTax > 0 && items.some(item => item.taxtype === "CGST")) ? (totals.totalTax / 2).toFixed(2) : "0.00"}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>IGST</p>
-      <p>{(totals.totalTax > 0 && items.every(item => item.taxtype === "IGST")) ? totals.totalTax.toFixed(2) : "0.00"}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>UGST</p>
-      <p>{(totals.totalTax > 0 && items.every(item => item.taxtype === "UGST")) ? totals.totalTax.toFixed(2) : "0.00"}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>Package Charges</p>
-      <p>{input.packages}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>Transportation Charges</p>
-      <p>{input.transport}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>Other Cost</p>
-      <p>{input.othercost}</p>
-    </div>
-    <div className="grid grid-cols-2">
-      <p>Grand Total (RS)</p>
-      <p>{totals.grandTotal.toFixed(2)}</p>
-    </div>
-  </div>
-</div>
-
 
       {/* Payment Terms Section */}
       <div className="mt-5">
@@ -649,31 +776,44 @@ const Page = () => {
         <div className="border border-gray-300 p-4">
           <input
             type="text"
+            name="term1"
+            value={input.term1}
+            onChange={handleInputChange}
             placeholder="Enter Payment Term 1"
-            className="border border-gray-300 rounded-md w-full mb-2 h-10 px-2"
+            className="border text-sm uppercase border-gray-300 rounded-md w-full mb-2 h-10 px-2"
           />
           <input
             type="text"
+            value={input.term2}
+            name="term2"
+            onChange={handleInputChange}
             placeholder="Enter Payment Term 2"
-            className="border border-gray-300 rounded-md w-full mb-2 h-10 px-2"
+            className="border text-sm uppercase border-gray-300 rounded-md w-full mb-2 h-10 px-2"
           />
           <input
             type="text"
+            value={input.term3}
+            name="term3"
+            onChange={handleInputChange}
             placeholder="Enter Payment Term 3"
-            className="border border-gray-300 rounded-md w-full mb-2 h-10 px-2"
+            className="border text-sm uppercase border-gray-300 rounded-md w-full mb-2 h-10 px-2"
           />
           <input
             type="text"
+            value={input.term4}
+            name="term4"
+            onChange={handleInputChange}
             placeholder="Enter Payment Term 4"
-            className="border border-gray-300 rounded-md w-full mb-2 h-10 px-2"
+            className="border text-sm uppercase border-gray-300 rounded-md w-full mb-2 h-10 px-2"
           />
         </div>
       </div>
       <div className="mt-5 flex justify-center">
         <button
           type="submit"
-          className="bg-blue-600 r text-white rounded-md px-4 py-2"
+          className="bg-blue-600 flex items-center text-white rounded-md px-4 py-2"
         >
+           <img src={"./img/save.png"} alt="" className="w-5 mr-1 h-5 text-white" />
           Save
         </button>
       </div>

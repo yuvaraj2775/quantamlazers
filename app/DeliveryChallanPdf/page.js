@@ -11,6 +11,8 @@ const SearchInput = () => {
   const [qty, setQty] = useState(null);
   const [open, setOpen] = useState(false);
   const [quotation, setQuotation] = useState(null);
+  const [totals, setTotals] = useState(null);
+  console.log(totals,"abb")
 
   const qtyCalculate = (items) => {
     return items.reduce((acc, item) => {
@@ -28,64 +30,149 @@ const SearchInput = () => {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-
-    // Check if the ID starts with 'dc' or 'ql'
     if (searchInput.startsWith("dc")) {
-      const dcId = searchInput.substring(2); // Get the ID without 'dc'
-      const exists = fetchedData?.data.some(val => val.id == dcId); // Check for existence
-
+      const dcId = searchInput.substring(2);
+      const exists = fetchedData?.data.some(val => val.id == dcId);
       if (exists) {
-        router.push(`/DeliveryChallanPdf/${dcId}`); // Navigate to DC page
+        router.push(`/DeliveryChallanPdf/${dcId}`);
       } else {
-        setOpen(true); // Open modal if DC ID does not exist
+        setOpen(true);
       }
     } else if (searchInput.startsWith("ql")) {
-      const qlId = searchInput.substring(2); // Get the ID without 'ql'
-      const exists = quotation?.data.some(val => val.id == qlId); // Check for existence
-
+      const qlId = searchInput.substring(2);
+      const exists = quotation?.data.some(val => val.id == qlId);
       if (exists) {
-        router.push(`/quotationchallanpdf/${qlId}`); // Navigate to Quotation page
+        router.push(`/quotationchallanpdf/${qlId}`);
       } else {
-        setOpen(true); // Open modal if Quotation ID does not exist
+        setOpen(true);
       }
     } else {
-      setOpen(true); // Open modal if the format is incorrect
+      setOpen(true);
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch("/api/Formdata");
+      if (!response.ok) throw new Error("Failed to fetch data");
+      const result = await response.json();
+      const quantities = qtyCalculate(result.data2);
+      setQty(quantities);
+      setFetchedData(result);
+    } catch (error) {
+      console.error("Fetch failed:", error);
     }
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("/api/Formdata");
-        if (!response.ok) throw new Error("Failed to fetch data");
-        const result = await response.json();
-        const quantities = qtyCalculate(result.data2);
-        setQty(quantities);
-        setFetchedData(result);
-      } catch (error) {
-        console.error("Fetch failed:", error);
-      }
-    };
-
     fetchData();
   }, []);
 
+  const calculateTotals = (
+    items,
+    discountAmount,
+    Packagecharges,
+    TransportationCharges,
+    OtherCost
+  ) => {
+    const totals = items.reduce(
+      (totals, item) => {
+        const cgstAmt = parseFloat(item.cgstamt) || 0;
+        const sgstAmt = parseFloat(item.sgstamt) || 0;
+        const igstAmt = parseFloat(item.igstamt) || 0;
+        const ugstAmt = parseFloat(item.ugstamt) || 0;
+        const taxableValue = parseFloat(item.taxablevalue) || 0;
+  
+        return {
+          totalCGST: totals.totalCGST + cgstAmt,
+          totalSGST: totals.totalSGST + sgstAmt,
+          totalIGST: totals.totalIGST + igstAmt,
+          totalUGST: totals.totalUGST + ugstAmt,
+          taxableValue: totals.taxableValue + taxableValue,
+          grandTotal:
+            totals.grandTotal +
+            taxableValue +
+            cgstAmt +
+            sgstAmt +
+            igstAmt +
+            ugstAmt,
+        };
+      },
+      {
+        totalCGST: 0,
+        totalSGST: 0,
+        totalIGST: 0,
+        totalUGST: 0,
+        taxableValue: 0,
+        grandTotal: 0,
+      }
+    );
+  
+    const parsedPackagecharges = parseFloat(Packagecharges) || 0;
+    const parsedTransportationCharges = parseFloat(TransportationCharges) || 0;
+    const parsedOtherCost = parseFloat(OtherCost) || 0;
+    const parsedDiscountAmount = parseFloat(discountAmount) || 0;
+  
+    let discount = 0;
+    if (parsedDiscountAmount) {
+      discount = parseFloat((totals.taxableValue * parsedDiscountAmount) / 100);
+    }
+    const discountedGrandTotal = Math.max(totals.grandTotal - discount, 0);
+    const totalCharges =
+      parsedPackagecharges + parsedTransportationCharges + parsedOtherCost;
+    const finalGrandTotal = Math.max(discountedGrandTotal + totalCharges, 0);
+  
+    return {
+      ...totals,
+      discount,
+      grandTotal: finalGrandTotal,
+      totalCharges,
+      parsedPackagecharges,
+      parsedTransportationCharges,
+      parsedOtherCost,
+    };
+  };
+  
+    
+
+
+
+
+  
   useEffect(() => {
     const fetchQuotationData = async () => {
       try {
         const response = await fetch("/api/quatation");
-        if (!response.ok) throw new Error("Failed to fetch data");
+        if (!response.ok) {
+          const errorDetails = await response.text(); // Get error details
+          throw new Error(`Failed to fetch data: ${response.status} ${errorDetails}`);
+        }
         const result = await response.json();
+        console.log("result-->",result)
         setQuotation(result);
+        const updatedQuodata = quotation?.map((quotation) => {
+          console.log("dd",quotation.itemdata)
+          const { grandTotal } = calculateTotals(
+            quotation.itemdata,
+            quotation.discount,
+            quotation.packagechargs,
+            quotation.trnschargs,
+            quotation.othercost
+          );
+          return { ...quotation, grandTotal };
+        });
+
+        setTotals(updatedQuodata);
       } catch (error) {
-        console.error("Fetch failed:", error);
+        console.error("Fetch failed:", error.message);
       }
     };
-
+  
     fetchQuotationData();
   }, []);
+  
 
-  const totalQuantity = Object.values(qty || {}).reduce((acc, qty) => acc + qty, 0);
+  console.log(totals,"totals")
 
   return (
     <div className="container mx-auto p-4 h-screen overflow-y-auto rounded-md">
@@ -122,7 +209,7 @@ const SearchInput = () => {
                   </Link>
                 </td>
                 <td className="border border-gray-300 p-2">{qty[val.id] || 0}</td>
-                <td className="border border-gray-300 p-2">{val.buyer}</td>
+                <td className="border border-gray-300 p-2 uppercase text-sm">{val.buyer}</td>
               </tr>
             ))}
           </tbody>
@@ -132,24 +219,26 @@ const SearchInput = () => {
           <thead className="bg-gray-200">
             <tr>
               <th className="border border-gray-300 p-2">S.NO</th>
-              <th className="border border-gray-300 p-2">QL NO</th>
+              <th className="border border-gray-300 p-2 w-20">QL NO</th>
               <th className="border border-gray-300 p-2">BUYER</th>
-              <th className="border border-gray-300 p-2">Grand total</th>
+              <th className="border border-gray-300 p-2">Grand Total</th>
             </tr>
           </thead>
           <tbody>
             {quotation?.data.map((val, index) => (
               <tr key={val.id} className={`hover:bg-gray-100 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}>
                 <td className="border border-gray-300 p-2">{index + 1}</td>
-                <td className="border border-gray-300 p-2">
+                <td className="border w-20 border-gray-300 p-2">
                   <Link href={`/quotationchallanpdf/${val.id}`} className="hover:underline text-blue-600">
                     QL {val.id}
                   </Link>
                 </td>
-                <td className="border border-gray-300 p-2">{val.Address}</td>
-                <td className="border border-gray-300 p-2">{val.buyer}</td>
-              </tr>
-            ))}
+                <td className="border border-gray-300 p-2 uppercase text-sm">{val.Address}</td>
+               
+                <td className="border border-gray-300 p-2">{(val.grandTotal || 0).toFixed(2)}</td>
+               
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

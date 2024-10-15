@@ -1,5 +1,5 @@
 "use client";
-import { ArrowDownTrayIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import html2canvas from "html2canvas";
@@ -145,32 +145,32 @@ const Page = ({ params }) => {
                 </pre>
 
                 <div className="grid grid-cols-2 mt-2">
-                  <p className="font-bold">GST NO </p>
+                  <p className="font-bold mt-3">GST NO </p>
                   <p>: {fetcheddata?.data.gstnumber}</p>
                 </div>
                 <div className="grid grid-cols-2 mt-2">
                   <p className="uppercase font-bold ">Kind Attention </p>
                   <p className="font-normal">
-                    {fetcheddata?.data.kindattention}
+                   : {fetcheddata?.data.kindattention}
                   </p>
                 </div>
               </div>
               <div className="px-2  w-2/5 capitalize font-semibold">
                 <div className="mt-2 grid pb-3 grid-cols-2">
                   <label>Quotation ID</label>
-                  <p className="font-normal">:{fetcheddata?.data.id}</p>
+                  <p className="font-normal">: {fetcheddata?.data.id}</p>
                   <label className="mt-2">Date</label>
-                  <p className="font-normal mt-2">:{fetcheddata?.data.Date}</p>
+                  <p className="font-normal mt-2">: {fetcheddata?.data.Date}</p>
                   <label className="mt-2">Ref NO</label>
-                  <p className="font-normal mt-2">
-                    :{fetcheddata?.data.reference}
+                  <p className="font-normal mt-2 uppercase">
+                    : {fetcheddata?.data.reference}
                   </p>
                 </div>
               </div>
             </div>
             <div className=" flex items-center border-b-2 my-7 pb-5 pl-5 border-black">
               <p className="font-bold mr-3">Subject</p>
-              <p>:{fetcheddata?.data.subject}</p>
+              <p className="uppercase">: {fetcheddata?.data.subject}</p>
             </div>
             <div className="flex items-center pb-5">
               <p className="ml-5">
@@ -294,18 +294,18 @@ const Page = ({ params }) => {
                   <p className="font-bold mt-2">Tax Amount</p>
                   <div className="flex justify-evenly">
                     <p className="grid grid-cols-2 ">
-                      CGST : <span>{totals.totalCGST}</span>
+                      CGST  <span>: {totals.totalCGST}</span>
                     </p>
                     <p className="grid grid-cols-2">
-                      IGST : <span>{totals.totalIGST}</span>
+                      IGST  <span>: {totals.totalIGST}</span>
                     </p>
                   </div>
                   <div className="flex justify-evenly ml-2">
                     <p className="grid grid-cols-2">
-                      SGST : <span>{totals.totalSGST}</span>
+                      SGST  <span>: {(totals.totalSGST || 0).toFixed(2)}</span>
                     </p>
                     <p className="grid grid-cols-2 ml-2">
-                      UGST : <span>0.00</span>
+                      UGST  <span>: 0.00</span>
                     </p>
                   </div>
                 </div>
@@ -323,11 +323,11 @@ const Page = ({ params }) => {
                 </div>
                 <div className="grid grid-cols-2 mt-2">
                   <p>CGST</p>
-                  <p>{totals.totalCGST}</p>
+                  <p>{(totals.totalCGST || 0).toFixed(2) }</p>
                 </div>
                 <div className="grid grid-cols-2 mt-2">
                   <p>SGST</p>
-                  <p>{totals.totalSGST}</p>
+                  <p>{(totals.totalSGST || 0).toFixed(2)})</p>
                 </div>
                 <div className="grid grid-cols-2 mt-2">
                   <p>IGST</p>
@@ -352,7 +352,7 @@ const Page = ({ params }) => {
                 <div className="grid grid-cols-2 my-3">
                   <p className="font-bold">Grand Total (rs)</p>
                   <p className="font-bold">
-                    {(totals.grandTotal || 0).toFixed(2)}
+                    {(fetcheddata?.data.grandTotal || 0).toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -360,9 +360,10 @@ const Page = ({ params }) => {
             <div className="px-2 mt-2">
               <p className="font-bold">Terms & Conditions :</p>
               <p className="mt-2">PAYMENT TERMS :</p>
-              <p className="mt-2">1. PAYMENT TERMS: AGAINST PROFORMA INVOICE</p>
-              <p className="mt-2">2. TRANSPORTATION AT YOUR SCOPE</p>
-              <p className="mt-2">3. DELIVERY DAYS: 7 WORKING DAYS</p>
+              <p className="mt-2 uppercase">1. {fetcheddata?.data.term1}</p>
+              <p className="mt-2 uppercase">2. {fetcheddata?.data.term2}</p>
+              <p className="mt-2 uppercase">3. {fetcheddata?.data.term3}</p>
+              <p className="mt-2 uppercase">4. {fetcheddata?.data.term4}</p>
               <p className="text-center mt-2">Thank you</p>
               <p className="mt-2">
                 We are looking forward to receive your valuable orders and
@@ -376,13 +377,18 @@ const Page = ({ params }) => {
           </div>
         </div>
       </div>
-      <div className="flex justify-between">
+      <div className="flex justify-between mx-5 mb-5">
+        <div   className="rounded-md p-2 border-2 flex items-center bg-blue-500 text-white" >
+        <ArrowLeftIcon className="w-4 h-4 mr-1" />
         <Link
           href={`/quotationedit?id=${params.slug}`}
-          className="rounded-md p-2 border-2 flex items-center bg-blue-500 text-white"
+        
         >
           <p>Return to edit</p>
         </Link>
+
+        </div>
+     
         <button
           onClick={pdfDownload}
           className="rounded-md p-2 border-2 flex items-center bg-green-500 text-white"

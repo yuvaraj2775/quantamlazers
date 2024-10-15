@@ -1,8 +1,8 @@
 "use client";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { EyeIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect } from "react";
-import { toWords } from 'number-to-words';
+import { toWords } from "number-to-words";
 
 import {
   Dialog,
@@ -15,6 +15,15 @@ import Link from "next/link";
 
 const page = () => {
   const [fetchdata, setfetchdata] = useState(null);
+  const [totals, setTotals] = useState({
+    subTotal: 0,
+    discountAmount: 0,
+    totalCGST: 0,
+    totalSGST: 0,
+    totalIGST: 0,
+    grandTotal: 0,
+  });
+
   const [formdata, setformdata] = useState({ items: [], items1: [] });
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -22,76 +31,52 @@ const page = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
 
+
   const calculateTotals = () => {
     const subtotal = formdata.items.reduce((sum, item) => {
       const taxableValue = parseFloat(item.taxableValue) || 0;
       return sum + taxableValue;
     }, 0);
 
-  
-
-    const discountAmount =
-      (subtotal * (parseFloat(formdata.items1.discount) || 0)) / 100;
+    const discountAmount = (subtotal * (parseFloat(formdata.items1.discount) || 0)) / 100;
 
     const totalCGST = formdata.items.reduce((sum, item) => {
-      return item.taxtype === "CGST"
-        ? sum + (parseFloat(item.taxamt) || 0)
-        : sum;
+      return item.taxtype === "CGST" ? sum + (parseFloat(item.taxamt) || 0) : sum;
     }, 0);
 
     const totalSGST = formdata.items.reduce((sum, item) => {
-      return item.taxtype === "CGST"
-        ? sum + (parseFloat(item.taxamt2) || 0)
-        : sum;
+      return item.taxtype === "CGST" ? sum + (parseFloat(item.taxamt2) || 0) : sum;
     }, 0);
 
     const totalIGST = formdata.items.reduce((sum, item) => {
-      return item.taxtype === "IGST"
-        ? sum + (parseFloat(item.taxamt) || 0)
-        : sum;
-    }, 0);
-
-    const totalUGST = formdata.items.reduce((sum, item) => {
-      return item.taxtype === "UGST"
-        ? sum + (parseFloat(item.taxamt2) || 0)
-        : sum;
+      return item.taxtype === "IGST" ? sum + (parseFloat(item.taxamt) || 0) : sum;
     }, 0);
 
     const packageCharges = parseFloat(formdata.items1.packageCharges) || 0;
     const transportCharges = parseFloat(formdata.items1.transportCharges) || 0;
     const otherCosts = parseFloat(formdata.items1.otherCosts) || 0;
 
-    const grandTotal =
-      subtotal -
-      discountAmount +
-      totalCGST +
-      totalSGST +
-      totalIGST +
-      totalUGST +
-      packageCharges +
-      transportCharges +
-      otherCosts;
+    const grandTotal = subtotal - discountAmount + totalCGST + totalSGST + totalIGST + packageCharges + transportCharges + otherCosts;
 
     return {
       subTotal: subtotal,
       discountAmount,
-      totalTax: totalCGST + totalSGST + totalIGST + totalUGST,
-      totalCGST: totalCGST || 0, // Ensure zero is returned
-      totalSGST: totalSGST || 0, // Ensure zero is returned
-      totalIGST: totalIGST || 0, // Ensure zero is returned
-      totalUGST: totalUGST || 0, // Ensure zero is returned
+      totalTax: totalCGST + totalSGST + totalIGST,
+      totalCGST,
+      totalSGST,
+      totalIGST,
       grandTotal,
     };
   };
 
-  const totals = calculateTotals();
-  const fulltotals = {
-    grandTotal: parseFloat(totals.grandTotal.toFixed(2)), // Convert to a number
-    // other totals...
-  };
+  useEffect(() => {
+    const calculatedTotals = calculateTotals();
+    setTotals(calculatedTotals);
+  }, [formdata]);
 
-  let grandTotalInWords = toWords(fulltotals.grandTotal);
+  let grandTotalInWords = toWords(totals.grandTotal);
 
+  console.log(totals,"totals")
   useEffect(() => {
     const fetchData = async () => {
       if (searchid) {
@@ -114,26 +99,31 @@ const page = () => {
     fetchData();
   }, [searchid]);
 
-  const handleSubmit = async (e) => {
+
+  const handlesubmit = async (e) => {
     e.preventDefault();
-   
+  
     const formDataToSend = {
       ...formdata.items1,
       items: formdata.items,
       quotationId: fetchdata?.data?.id || null,
+      grandTotal: totals.grandTotal,
+      
+      
     };
-
+  
     try {
       const response = await fetch(`/api/quatation?id=${searchid}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formDataToSend),
+        
       });
 
       if (response.ok) {
         const result = await response.json();
         console.log("Update successful:", result);
-        setOpen(true)
+        setOpen(true);
       } else {
         throw new Error("Update failed");
       }
@@ -141,6 +131,7 @@ const page = () => {
       console.error("Error during submission:", error);
     }
   };
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -159,64 +150,66 @@ const page = () => {
       }));
     }
   };
+
   const handleItemChange = (index, e) => {
     const { name, value } = e.target;
     const updatedItems = [...formdata.items];
 
     // Update the item value
     updatedItems[index] = {
-        ...updatedItems[index],
-        [name]: value,
+      ...updatedItems[index],
+      [name]: value,
     };
 
     // Handle tax type changes
     if (name === "taxtype") {
-        // Reset tax amounts based on selected tax type
-        if (value === "CGST") {
-            updatedItems[index].percentage = "9";
-            updatedItems[index].percentage2 = "9"; // SGST percentage
-            updatedItems[index].taxamt = "0.00"; // Resetting taxamt for IGST
-            updatedItems[index].taxamt2 = "0.00"; // Resetting taxamt2 for IGST
-        } else if (value === "IGST") {
-            updatedItems[index].percentage = "18"; // Set IGST percentage
-            updatedItems[index].percentage2 = "0"; // No SGST
-            updatedItems[index].taxamt = "0.00"; // Resetting taxamt for CGST
-            updatedItems[index].taxamt2 = (
-                (parseFloat(updatedItems[index].taxableValue) * 18) / 100
-            ).toFixed(2); // Calculate IGST tax amount
-        }
+      if (value === "CGST") {
+        updatedItems[index].percentage = "9";
+        updatedItems[index].percentage2 = "9"; // SGST percentage
+        updatedItems[index].taxamt = "0.00"; // Resetting taxamt for IGST
+        updatedItems[index].taxamt2 = "0.00"; // Resetting taxamt2 for IGST
+      } else if (value === "IGST") {
+        updatedItems[index].percentage = "18"; // Set IGST percentage
+        updatedItems[index].percentage2 = "0"; // No SGST
+        updatedItems[index].taxamt = "0.00"; // Resetting taxamt for CGST
+        updatedItems[index].taxamt2 = (
+          (parseFloat(updatedItems[index].taxableValue) * 18) /
+          100
+        ).toFixed(2); // Calculate IGST tax amount
+      }
     }
 
     // Update quantities and unit costs to recalculate taxable values and tax amounts
     if (name === "qty" || name === "unitCost") {
-        const qty = parseFloat(updatedItems[index].qty) || 0;
-        const unitCost = parseFloat(updatedItems[index].unitCost) || 0;
-        updatedItems[index].taxableValue = (qty * unitCost).toFixed(2);
+      const qty = parseFloat(updatedItems[index].qty) || 0;
+      const unitCost = parseFloat(updatedItems[index].unitCost) || 0;
+      updatedItems[index].taxableValue = (qty * unitCost).toFixed(2);
     }
 
-    // Calculate tax amounts based on the current taxable value
+    // Recalculate tax amounts based on selected tax type
     const taxableValue = parseFloat(updatedItems[index].taxableValue) || 0;
     const cgstPercentage = parseFloat(updatedItems[index].percentage) || 0;
     const sgstPercentage = parseFloat(updatedItems[index].percentage2) || 0;
 
-    // Recalculate tax amounts based on selected tax type
     if (updatedItems[index].taxtype === "CGST") {
-        updatedItems[index].taxamt = (
-            (taxableValue * cgstPercentage) / 100
-        ).toFixed(2);
-        updatedItems[index].taxamt2 = (
-            (taxableValue * sgstPercentage) / 100
-        ).toFixed(2); // SGST
+      updatedItems[index].taxamt = (
+        (taxableValue * cgstPercentage) /
+        100
+      ).toFixed(2);
+      updatedItems[index].taxamt2 = (
+        (taxableValue * sgstPercentage) /
+        100
+      ).toFixed(2); // SGST
     } else if (updatedItems[index].taxtype === "IGST") {
-        updatedItems[index].taxamt = (
-            (taxableValue * (cgstPercentage + sgstPercentage)) / 100
-        ).toFixed(2);
-        updatedItems[index].taxamt2 = "0.00"; // IGST does not have a second type tax amount
+      updatedItems[index].taxamt = (
+        (taxableValue * (cgstPercentage + sgstPercentage)) /
+        100
+      ).toFixed(2);
+      updatedItems[index].taxamt2 = "0.00"; // IGST does not have a second type tax amount
     }
 
     setformdata((prev) => ({ ...prev, items: updatedItems }));
-};
-
+  };
 
   const handleAddRow = () => {
     setformdata((prev) => ({
@@ -253,27 +246,25 @@ const page = () => {
   };
 
   const handleDeleteRow = (index) => {
-    console.log(`Deleting item at index: ${index}`);
     const newItems = formdata.items.filter((_, i) => i !== index);
     setformdata((prev) => ({ ...prev, items: newItems }));
     setDeleteDialogOpen(false);
     setRowToDelete(null);
   };
 
-  
   const cancelDelete = () => {
     setDeleteDialogOpen(false);
     setRowToDelete(null);
   };
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={handlesubmit}
       className="overflow-y-auto h-screen p-6 bg-white rounded-lg shadow-md"
     >
       <div className="flex justify-between mb-4">
         <h1></h1>
         <h1 className="text-xl font-bold">Quotation Form</h1>
-        <h2 className="text-lg">Quotation NO: Draft</h2>
+        <h2 className="text-lg">Quotation NO: {searchid }</h2>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -285,7 +276,7 @@ const page = () => {
             name="Address"
             value={formdata?.items1.Address}
             onChange={handleInputChange}
-            className="border border-gray-300 rounded-md w-full h-32 px-2 py-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
+            className="border uppercase text-sm border-gray-300 rounded-md w-full h-32 px-2 py-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
           />
         </div>
         <div>
@@ -314,7 +305,7 @@ const page = () => {
               </label>
               <input
                 type="text"
-                className="border border-gray-300 rounded-md w-full h-10 px-2"
+                className="border text-sm uppercase border-gray-300 rounded-md w-full h-10 px-2"
                 name="reference"
                 value={formdata?.items1.reference}
                 onChange={handleInputChange}
@@ -325,13 +316,13 @@ const page = () => {
             <div>
               <label
                 htmlFor="gstnumber"
-                className="block mb-1 text-sm font-semibold"
+                className="block mb-1  text-sm font-semibold"
               >
                 GST Number
               </label>
               <input
                 type="text"
-                className="border border-gray-300 rounded-md w-full h-10 px-2"
+                className="border text-sm uppercase border-gray-300 rounded-md w-full h-10 px-2"
                 name="gstnumber"
                 value={formdata?.items1.gstnumber}
                 onChange={handleInputChange}
@@ -346,7 +337,7 @@ const page = () => {
               </label>
               <input
                 type="text"
-                className="border border-gray-300 rounded-md w-full h-10 px-2"
+                className="border text-sm uppercase border-gray-300 rounded-md w-full h-10 px-2"
                 name="kindattention"
                 value={formdata?.items1.kindattention}
                 onChange={handleInputChange}
@@ -361,7 +352,7 @@ const page = () => {
         </label>
         <input
           type="text"
-          className="border border-gray-300 rounded-md w-full h-10 px-2"
+          className="border uppercase text-sm border-gray-300 rounded-md w-full h-10 px-2"
           name="subject"
           value={formdata?.items1.subject}
           onChange={handleInputChange}
@@ -369,181 +360,202 @@ const page = () => {
       </div>
 
       <div className="overflow-x-auto mt-5">
-        <table className="border border-gray-300 custom-table">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="border border-gray-300 p-2">SL.NO</th>
-              <th className="border border-gray-300 p-2">
-                Item Name/Description
-              </th>
-              <th className="border border-gray-300 p-2">HSN Code</th>
-              <th className="border border-gray-300 p-2 px-2 w-20">Qty</th>
-              <th className="border border-gray-300 p-2">Unit</th>
-              <th className="border border-gray-300 p-2 px-2 w-20">Unit Cost</th>
-              <th className="border border-gray-300 p-2">Taxable Value</th>
-              <th className="border border-gray-300 p-2">Type of Tax</th>
-              <th className="border border-gray-300 p-2">%</th>
-              <th className="border border-gray-300 p-2">Tax Amt</th>
-              <th className="border border-gray-300 p-2">Type of Tax</th>
-              <th className="border border-gray-300 p-2">%</th>
-              <th className="border border-gray-300 p-2">Tax Amt</th>
-              <th className="border border-gray-300 p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {formdata?.items.map((item, index) => (
-              <tr key={index} className="border-b hover:bg-gray-50">
-                <td className="border border-gray-300 p-2 text-center">
-                  {index + 1}
-                </td>
-                <td className="border border-gray-300 p-2">
-                  <input
-                    type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
-                    name="description"
-                    value={item.description}
-                    onChange={(e) => handleItemChange(index, e)}
-                  />
-                </td>
-                <td className="border border-gray-300 p-2">
-                  <input
-                    type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
-                    name="hsncode"
-                    value={item.hsncode}
-                    onChange={(e) => handleItemChange(index, e)}
-                  />
-                </td>
-                <td className="border border-gray-300 p-2">
-                  <input
-                    type="number"
-                    className="border px-2 border-gray-300 w-20 rounded-md   h-10 "
-                    name="qty"
-                    value={item.qty}
-                    onChange={(e) => handleItemChange(index, e)}
-                  />
-                </td>
-                <td className="border border-gray-300 p-2">
-                  <select
-                    name="unit"
-                    onChange={(e) => handleItemChange(index, e)}
-                    value={item.unit}
-                    className="border border-gray-300 rounded-md h-10 w-full"
-                  >
-                    <option value="NOS">NOS</option>
-                    <option value="EACH">EACH</option>
-                    <option value="SET">SET</option>
-                  </select>
-                </td>
-                <td className="border border-gray-300 p-2">
-                  <input
-                    type="number"
-                    className="border border-gray-300 rounded-md w-20 h-10 px-2"
-                    name="unitCost"
-                    value={item.unitCost}
-                    onChange={(e) => handleItemChange(index, e)}
-                  />
-                </td>
-                <td className="border border-gray-300 p-2">
-                  <input
-                    type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
-                    name="taxableValue"
-                    value={item.taxableValue}
-                    readOnly
-                  />
-                </td>
-                <td className="border border-gray-300 p-2">
-                  <select
-                    name="taxtype"
-                    className="border border-gray-300 rounded-md h-10 w-full"
-                    onChange={(e) => handleItemChange(index, e)}
-                    value={item.taxtype}
-                  >
-                    <option value="CGST">CGST</option>
-                    <option value="IGST">IGST</option>
-                  </select>
-                </td>
-                <td className="border border-gray-300 p-2">
-                  <input
-                    type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
-                    name="percentage"
-                    value={item.percentage}
-                    onChange={(e) => handleItemChange(index, e)}
-                  />
-                </td>
-                <td className="border border-gray-300 p-2">
-                  <input
-                    type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
-                    name="taxamt"
-                    value={item.taxamt}
-                    readOnly
-                  />
-                </td>
-                <td className="border border-gray-300 p-2">
-                  <select
-                    name="typeoftax"
-                    onChange={(e) => handleItemChange(index, e)}
-                    value={item.typeoftax}
-                    className="border border-gray-300 rounded-md h-10 w-full"
-                  >
-                    {item.taxtype === "CGST" ? (
-                      <option value="SGST">SGST</option>
-                    ) : (
-                      <option value="UGST">UGST</option>
-                    )}
-                  </select>
-                </td>
-                <td className="border border-gray-300 p-2">
-                  <input
-                    type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
-                    name="percentage2"
-                    value={item.percentage2}
-                    onChange={(e) => handleItemChange(index, e)}
-                  />
-                </td>
-                <td className="border border-gray-300 p-2">
-                  <input
-                    type="text"
-                    className="border border-gray-300 rounded-md w-full h-10 px-2"
-                    name="taxamt2"
-                    value={item.taxamt2}
-                    readOnly
-                  />
-                </td>
-                <td className="border border-gray-300 p-2">
-                  <div className="flex justify-center">
-                    <button type="button" onClick={() => handleAddRow()}>
-                      <PlusIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openDeleteDialog(index)}
-                    >
-                      <XMarkIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="mt-4">
-          <label className="text-sm font-semibold">
-            Total Number of Quantities:
-          </label>
-          <p>
-            {formdata?.items.reduce(
-              (sum, item) => sum + (parseInt(item.qty) || 0),
-              0
+  <table className="border border-gray-300 custom-table">
+    <thead className="bg-gray-200">
+      <tr>
+        <th className="border border-gray-300 p-2">SL.NO</th>
+        <th className="border border-gray-300 p-2">Item Name/Description</th>
+        <th className="border border-gray-300 p-2">HSN Code</th>
+        <th className="border border-gray-300 p-2 px-2 w-20">Qty</th>
+        <th className="border border-gray-300 p-2">Unit</th>
+        <th className="border border-gray-300 p-2 px-2 w-20">Unit Cost</th>
+        <th className="border border-gray-300 p-2">Taxable Value</th>
+        <th className="border border-gray-300 p-2">Type of Tax</th>
+        <th className="border border-gray-300 p-2">%</th>
+        <th className="border border-gray-300 p-2">Tax Amt</th>
+        <th className="border border-gray-300 p-2">Type of Tax</th>
+        <th className="border border-gray-300 p-2">%</th>
+        <th className="border border-gray-300 p-2">Tax Amt</th>
+        <th className="border border-gray-300 p-2">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {formdata?.items.map((item, index) => (
+        <tr key={index} className="border-b hover:bg-gray-50">
+          <td className="border border-gray-300 p-2 text-center">{index + 1}</td>
+          <td className="border border-gray-300 p-2">
+            <input
+              type="text"
+              className="border capitalize border-gray-300 rounded-md w-52 h-10 px-2"
+              name="description"
+              value={item.description}
+              onChange={(e) => handleItemChange(index, e)}
+            />
+          </td>
+          <td className="border border-gray-300 p-2">
+            <input
+              type="text"
+              className="border text-right border-gray-300 rounded-md w-20 h-10 px-2"
+              name="hsncode"
+              value={item.hsncode}
+              onChange={(e) => handleItemChange(index, e)}
+            />
+          </td>
+          <td className="border border-gray-300 p-2">
+            <input
+              type="number"
+              className="border px-2 text-right border-gray-300 w-24 rounded-md h-10"
+              name="qty"
+              value={item.qty}
+              onChange={(e) => handleItemChange(index, e)}
+            />
+          </td>
+          <td className="border border-gray-300 p-2 w-16">
+            <select
+              name="unit"
+              onChange={(e) => handleItemChange(index, e)}
+              value={item.unit}
+              className="border border-gray-300 rounded-md h-10 w-16"
+            >
+              <option value="NOS">NOS</option>
+              <option value="EACH">EACH</option>
+              <option value="SET">SET</option>
+            </select>
+          </td>
+          <td className="border border-gray-300 p-2">
+            <input
+              type="number"
+              className="border text-right border-gray-300 rounded-md w-24 h-10 px-2"
+              name="unitCost"
+              value={item.unitCost}
+              onChange={(e) => handleItemChange(index, e)}
+            />
+          </td>
+          <td className="border border-gray-300 p-2">
+            <input
+              type="text"
+              className="border text-right border-gray-300 rounded-md w-full h-10 px-2"
+              name="taxableValue"
+              value={item.taxableValue}
+              readOnly
+            />
+          </td>
+          <td className="border border-gray-300 p-2 w-16">
+            <select
+              name="taxtype"
+              className="border border-gray-300 rounded-md h-10 w-16"
+              onChange={(e) => handleItemChange(index, e)}
+              value={item.taxtype}
+            >
+              <option value="CGST">CGST</option>
+              <option value="IGST">IGST</option>
+            </select>
+          </td>
+          <td className="border border-gray-300 p-2 w-10">
+            <input
+              type="text"
+              className="border text-right border-gray-300 rounded-md w-10 h-10 px-2"
+              name="percentage"
+              value={item.percentage}
+              onChange={(e) => handleItemChange(index, e)}
+            />
+          </td>
+          <td className="border border-gray-300 p-2 w-16">
+            <input
+              type="text"
+              className="border text-right border-gray-300 rounded-md w-16 h-10 px-2"
+              name="taxamt"
+              value={item.taxamt}
+              readOnly
+            />
+          </td>
+          <td className="border border-gray-300 p-2 w-16">
+            <select
+              name="typeoftax"
+              onChange={(e) => handleItemChange(index, e)}
+              value={item.typeoftax}
+              className="border border-gray-300 rounded-md h-10 w-16"
+            >
+              {item.taxtype === "CGST" ? (
+                <option value="SGST">SGST</option>
+              ) : (
+                <option value="UGST">UGST</option>
+              )}
+            </select>
+          </td>
+          <td className="border border-gray-300 p-2 w-14">
+            <input
+              type="text"
+              className="border text-right border-gray-300 rounded-md w-14 h-10 px-2"
+              name="percentage2"
+              value={item.percentage2}
+              onChange={(e) => handleItemChange(index, e)}
+            />
+          </td>
+          <td className="border border-gray-300 p-2 w-14">
+            <input
+              type="text"
+              className="border text-right border-gray-300 rounded-md w-14 h-10 px-2"
+              name="taxamt2"
+              value={item.taxamt2}
+              readOnly
+            />
+          </td>
+          <td className="flex justify-center items-center mt-3 border-gray-300 space-x-2 px-2">
+            <button
+              type="button"
+              onClick={handleAddRow}
+              className="flex items-center justify-center w-8 h-8 text-green-700 bg-green-100 rounded-full hover:bg-green-200 transition"
+              title="Add Row"
+            >
+              <PlusIcon className="w-5 h-5" />
+            </button>
+            {index === 0 ? (
+              <button
+                type="button"
+                className="flex items-center justify-center w-8 h-8 text-gray-400 bg-gray-200 rounded-full"
+                title="First row cannot be deleted"
+                disabled
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => openDeleteDialog(index)}
+                className="flex items-center justify-center w-8 h-8 text-red-900 bg-red-100 rounded-full hover:bg-red-200 transition"
+                title="Delete Row"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
             )}
-          </p>
-        </div>
-      </div>
+          </td>
+        </tr>
+      ))}
+      <tr>
+        <td></td>
+        <td className="w-[50%]">
+        <label className="text-sm font-semibold">Total Number of Quantities:</label>
+        </td>
+        <td></td>
+        <td className="text-right  pr-8">
+        <p>
+      {formdata?.items.reduce(
+        (sum, item) => sum + (parseInt(item.qty) || 0),
+        0
+      )}
+    </p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div className="mt-4">
+  
+   
+  </div>
+</div>
+
 
       {/* Additional Costs Section */}
       <div className="grid grid-cols-4 gap-4 mt-5">
@@ -590,41 +602,38 @@ const page = () => {
           />
         </div>
       </div>
-      <div className="grid grid-cols-2">
+      <div className="grid grid-cols-2 mt-2">
         <div>
           <div>
             <div>
-              <span className="text-sm font-semibold">
+              <span className="text-sm font-semibold ">
                 Grand Total (In Words)
               </span>
-              <p>
-            {grandTotalInWords}
-              </p>
+              <p className="text-sm capitalize " >{grandTotalInWords}</p>
             </div>
             <div>
               <span className="text-sm font-semibold">Tax Amount</span>
               <div className="grid grid-cols-2">
                 <div>
-                  <label>CGST:</label>
-                  <p>{totals.totalCGST.toFixed(2)}</p>{" "}
+                  <label className="text-sm" >CGST:</label>
+                  <p className="text-sm" >{totals.totalCGST.toFixed(2)}</p>{" "}
                   {/* Use calculated CGST value */}
                 </div>
                 <div>
-                  <label>IGST:</label>
-                  <p>{totals.totalIGST.toFixed(2)}</p>{" "}
+                  <label className="text-sm">IGST:</label>
+                  <p className="text-sm">{totals.totalIGST.toFixed(2)}</p>{" "}
                   {/* Use calculated IGST value */}
                 </div>
               </div>
               <div className="grid grid-cols-2">
                 <div>
-                  <label>SGST:</label>
-                  <p>{totals.totalSGST.toFixed(2)}</p>{" "}
+                  <label className="text-sm">SGST:</label>
+                  <p className="text-sm">{totals.totalSGST.toFixed(2)}</p>{" "}
                   {/* Use calculated SGST value */}
                 </div>
                 <div>
-                  <label>UGST:</label>
-                  <p>{totals.totalUGST.toFixed(2)}</p>{" "}
-                  {/* Use calculated UGST value */}
+                  <label className="text-sm">UGST:</label>
+                  <p className="text-sm">0.00</p> {/* Use calculated UGST value */}
                 </div>
               </div>
             </div>
@@ -632,72 +641,114 @@ const page = () => {
         </div>
         <div>
           <div className="grid grid-cols-2">
-            <p>Sub-Total Amt</p>
-            <p>{totals.subTotal.toFixed(2)}</p>
+            <p className="text-sm">Sub-Total Amt</p>
+            <p className="text-sm">{totals.subTotal.toFixed(2)}</p>
           </div>
-          <div className="grid grid-cols-2">
-            <p>Discount ({formdata.items1.discount} %)</p>
-            <p>{totals.discountAmount.toFixed(2)}</p>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm">Discount ({formdata.items1.discount} %)</p>
+            <p className="text-sm">{totals.discountAmount.toFixed(2)}</p>
           </div>
-          <div className="grid grid-cols-2">
-            <p>Total CGST</p>
-            <p>{totals.totalCGST > 0 ? totals.totalCGST.toFixed(2) : "0.00"}</p>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm">Total CGST</p>
+            <p className="text-sm">{totals.totalCGST > 0 ? totals.totalCGST.toFixed(2) : "0.00"}</p>
           </div>
-          <div className="grid grid-cols-2">
-            <p>Total SGST</p>
-            <p>{totals.totalTax.toFixed(2)}</p>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm">Total SGST</p>
+            <p className="text-sm">{totals.totalCGST.toFixed(2)}</p>
           </div>
-          <div className="grid grid-cols-2">
-            <p>Total IGST</p>
-            <p>{totals.totalIGST > 0 ? totals.totalIGST.toFixed(2) : "0.00"}</p>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm">Total IGST</p>
+            <p className="text-sm">{totals.totalIGST > 0 ? totals.totalIGST.toFixed(2) : "0.00"}</p>
           </div>
-          <div className="grid grid-cols-2">
-            <p>Total UGST</p>
-            <p>{totals.totalUGST > 0 ? totals.totalUGST.toFixed(2) : "0.00"}</p>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm">Total UGST</p>
+            <p className="text-sm">{totals.totalUGST > 0 ? totals.totalUGST.toFixed(2) : "0.00"}</p>
           </div>
-          <div className="grid grid-cols-2">
-            <p>Package Charges</p>
-            <p>{formdata.items1.packageCharges}</p>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm">Package Charges</p>
+            <p className="text-sm">{formdata.items1.packageCharges}</p>
           </div>
-          <div className="grid grid-cols-2">
-            <p>Transportation Charges</p>
-            <p>{formdata.items1.transportCharges}</p>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm">Transportation Charges</p>
+            <p className="text-sm">{formdata.items1.transportCharges}</p>
           </div>
-          <div className="grid grid-cols-2">
-            <p>Other Cost</p>
-            <p>{formdata.items1.otherCosts}</p>
-          </div>
-          <div className="grid grid-cols-2">
-            <p>Grand Total (RS)</p>
-            <p>{totals.grandTotal.toFixed(2)}</p>
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm">Other Cost</p>
+            <p className="text-sm">{formdata.items1.otherCosts}</p>
+          </div> 
+          <div className="grid grid-cols-2 mt-2">
+            <p className="text-sm">Grand Total (RS)</p>
+            <p className="text-sm">{totals.grandTotal.toFixed(2)}</p>
           </div>
         </div>
       </div>
 
-  <div className="flex justify-center" >
-    <div>
-      <Link  className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600" href={`/Quatation`} >
-        New
-      </Link>
-    <button
-        type="submit"
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-      >
-        Submit
-      </button>
-      <Link
-        type="submit"
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-        href={`/quotationchallanpdf/${searchid}`}
-      >
-        view
-      </Link>
-   
-    </div>
+      <div className="mt-5">
+        <h1 className="text-sm  font-semibold">Payment Terms</h1>
+        <div className="border border-gray-300 p-4 mt-2">
+          <input
+            type="text"
+            value={formdata?.items1.term1}
+            name="term1"
+            onChange={handleInputChange}
+            placeholder="Enter Payment Term 1"
+            className="border uppercase text-sm border-gray-300 rounded-md w-full mb-2 h-10 px-2"
+          />
+          <input
+            type="text"
+            value={formdata?.items1.term2}
+            name="term2"
+            onChange={handleInputChange}
+            placeholder="Enter Payment Term 2"
+            className="border uppercase text-sm border-gray-300 rounded-md w-full mb-2 h-10 px-2"
+          />
+          <input
+            type="text"
+            value={formdata?.items1.term3}
+            name="term3"
+            onChange={handleInputChange}
+            placeholder="Enter Payment Term 3"
+            className="border uppercase text-sm border-gray-300 rounded-md w-full mb-2 h-10 px-2"
+          />
+          <input
+            type="text"
+            name="term4"
+            value={formdata?.items1.term4}
+            onChange={handleInputChange}
+            placeholder="Enter Payment Term 4"
+            className="border uppercase text-sm border-gray-300 rounded-md w-full mb-2 h-10 px-2"
+          />
+        </div>
+      </div>
 
-  </div>
+      <div className="flex justify-center">
+        
+          <Link
+            className="mt-4 px-4 py-2 flex items-center bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            href={`/Quatation`}
+          >
+            <PlusIcon className="w-5 h-5 mt-0.5 mr-1 text-white" />
+            New
+          </Link>
+          <button
+            type="submit"
+            className="mt-4 px-4 py-2 bg-blue-500 text-white flex items-center mx-3 rounded-md hover:bg-blue-600"
+          >
+             <img src={"./img/save.png"} alt="" className="w-5 mr-1 h-5 text-white" />
+            Submit
+          </button>
+          <Link
+            type="submit"
+            className="mt-4 px-4 py-2 flex items-center bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            href={`/quotationchallanpdf/${searchid}`}
+          >
+               <EyeIcon className="w-4 h-4 mt-0.5 mr-1" />
+            view
+          </Link>
+        
+      </div>
 
-  <Dialog
+      <Dialog
         open={open}
         onClose={() => setOpen(false)}
         className="relative z-10"
@@ -728,7 +779,9 @@ const page = () => {
               <div className="mt-5 sm:mt-6">
                 <button
                   type="button"
-                  onClick={() => router.push(`/quotationchallanpdf/${searchid}`)}
+                  onClick={() =>
+                    router.push(`/quotationchallanpdf/${searchid}`)
+                  }
                   className="inline-flex w-full justify-center"
                 >
                   <span className="bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 rounded-md">
@@ -740,7 +793,6 @@ const page = () => {
           </div>
         </div>
       </Dialog>
-
 
       <Dialog
         open={deleteDialogOpen}
