@@ -86,40 +86,18 @@ export async function POST(req) {
       term2,
       term3,
       term4,
-      
+      grandTotal,
       items,
     } = dts;
 
-    if (
-      !Address ||
-      !Date ||
-      !gstnumber ||
-      !kindattention ||
-      !reference ||
-      !subject ||
-      !items ||
-      !packages ||
-      !transport ||
-      !discount ||
-      !othercost ||
-      !term1 ||
-       !term2 ||
-        !term3 ||
-        !term4 ||
-      !Array.isArray(items)
-    ) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
+  
 
     db = await opendb();
 
     const insertQuotation = `
       INSERT INTO quatationform 
-      (Address, Date, gstnumber, kindattention, reference, subject, packageCharges, transportCharges, discount, otherCosts,term1,term2,term3,term4)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (Address, Date, gstnumber, kindattention, reference, subject, packageCharges, transportCharges, discount, otherCosts,term1,term2,term3,term4 ,grandTotal)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const result = await db.run(insertQuotation, [
       Address,
@@ -135,7 +113,8 @@ export async function POST(req) {
       term1,
       term2,
       term3,
-       term4
+       term4,
+       grandTotal
     ]);
     const quotationId = result.lastID;
 

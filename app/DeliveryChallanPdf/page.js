@@ -30,16 +30,18 @@ const SearchInput = () => {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if (searchInput.startsWith("dc")) {
-      const dcId = searchInput.substring(2);
+    const  searchQuery = searchInput.trim().toUpperCase();
+
+    if (searchQuery.startsWith("DC")) {
+      const dcId = searchQuery.substring(2);
       const exists = fetchedData?.data.some(val => val.id == dcId);
       if (exists) {
         router.push(`/DeliveryChallanPdf/${dcId}`);
       } else {
         setOpen(true);
       }
-    } else if (searchInput.startsWith("ql")) {
-      const qlId = searchInput.substring(2);
+    } else if (searchQuery.startsWith("QL")) {
+      const qlId = searchQuery.substring(2);
       const exists = quotation?.data.some(val => val.id == qlId);
       if (exists) {
         router.push(`/quotationchallanpdf/${qlId}`);
@@ -181,7 +183,7 @@ const SearchInput = () => {
           type="text"
           value={searchInput}
           onChange={handleSearchChange}
-          className="h-10 w-2/5 border-2 border-gray-300 rounded-md p-2 mr-2 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-10 w-2/5 border-2 uppercase  border-gray-300 rounded-md p-2 mr-2 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Enter ID"
         />
         <button type="submit" className="h-10 border-2 border-blue-500 rounded-md bg-blue-500 text-white p-2 transition duration-300 hover:bg-blue-600">
@@ -205,7 +207,7 @@ const SearchInput = () => {
                 <td className="border border-gray-300 p-2">{index + 1}</td>
                 <td className="border border-gray-300 p-2">
                   <Link href={`/DeliveryChallanPdf/${val.id}`} className="hover:underline text-blue-600">
-                    DC {val.id}
+                    DC{val.id}
                   </Link>
                 </td>
                 <td className="border border-gray-300 p-2">{qty[val.id] || 0}</td>
@@ -230,7 +232,7 @@ const SearchInput = () => {
                 <td className="border border-gray-300 p-2">{index + 1}</td>
                 <td className="border w-20 border-gray-300 p-2">
                   <Link href={`/quotationchallanpdf/${val.id}`} className="hover:underline text-blue-600">
-                    QL {val.id}
+                    QL{val.id}
                   </Link>
                 </td>
                 <td className="border border-gray-300 p-2 uppercase text-sm">{val.Address}</td>

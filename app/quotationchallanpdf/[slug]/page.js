@@ -61,28 +61,29 @@ const Page = ({ params }) => {
 
   const calculateTotals = () => {
     if (!fetcheddata?.itemdata) return {};
-  
+
     const subtotal = fetcheddata.itemdata.reduce((acc, item) => {
       return acc + (parseFloat(item.taxableValue) || 0);
     }, 0);
-  
+
     const totalCGST = fetcheddata.itemdata.reduce((acc, item) => {
       return acc + (parseFloat(item.taxamt) || 0);
     }, 0);
-  
+
     const totalSGST = fetcheddata.itemdata.reduce((acc, item) => {
       return acc + (parseFloat(item.taxamt2) || 0);
     }, 0);
-  
+
     const totalIGST = fetcheddata.itemdata.reduce((acc, item) => {
       return acc + (parseFloat(item.igstamt) || 0);
     }, 0);
-  
+
     const discount = parseFloat(fetcheddata?.data.discount) || 0;
     const discountAmount = (subtotal * discount) / 100;
-  
-    const grandTotal = subtotal - discountAmount + totalCGST + totalSGST + totalIGST;
-  
+
+    const grandTotal =
+      subtotal - discountAmount + totalCGST + totalSGST + totalIGST;
+
     return {
       subtotal: isNaN(subtotal) ? 0 : subtotal,
       totalCGST: isNaN(totalCGST) ? 0 : totalCGST,
@@ -92,7 +93,6 @@ const Page = ({ params }) => {
       grandTotal: isNaN(grandTotal) ? 0 : grandTotal,
     };
   };
-  
 
   const totals = calculateTotals();
   const fulltotals = {
@@ -151,7 +151,7 @@ const Page = ({ params }) => {
                 <div className="grid grid-cols-2 mt-2">
                   <p className="uppercase font-bold ">Kind Attention </p>
                   <p className="font-normal">
-                   : {fetcheddata?.data.kindattention}
+                    : {fetcheddata?.data.kindattention}
                   </p>
                 </div>
               </div>
@@ -294,76 +294,92 @@ const Page = ({ params }) => {
                   <p className="font-bold mt-2">Tax Amount</p>
                   <div className="flex justify-evenly">
                     <p className="grid grid-cols-2 ">
-                      CGST  <span>: {totals.totalCGST}</span>
+                      CGST <span>: {totals.totalCGST}</span>
                     </p>
                     <p className="grid grid-cols-2">
-                      IGST  <span>: {totals.totalIGST}</span>
+                      IGST <span>: {totals.totalIGST}</span>
                     </p>
                   </div>
                   <div className="flex justify-evenly ml-2">
                     <p className="grid grid-cols-2">
-                      SGST  <span>: {(totals.totalSGST || 0).toFixed(2)}</span>
+                      SGST <span>: {(totals.totalSGST || 0).toFixed(2)}</span>
                     </p>
                     <p className="grid grid-cols-2 ml-2">
-                      UGST  <span>: 0.00</span>
+                      UGST <span>: 0.00</span>
                     </p>
                   </div>
                 </div>
               </div>
-              <div>
-                <div className="grid grid-cols-2 mt-2">
+              <div className="w-[70%]">
+                <div className="grid grid-cols-2 mt-2 ">
                   <p className="font-bold">Sub-Total Amt</p>
-                  <p>{totals.subtotal}</p>
+                  <p className="text-right">{totals.subtotal}</p>
                 </div>
                 <div className="grid grid-cols-2 mt-2">
                   <p>
                     Discount ({(fetcheddata?.data.discount || 0).toFixed(2)}%)
                   </p>
-                  <p>{totals.discountAmount}</p>
+                  <p className="text-right">{totals.discountAmount}</p>
                 </div>
                 <div className="grid grid-cols-2 mt-2">
                   <p>CGST</p>
-                  <p>{(totals.totalCGST || 0).toFixed(2) }</p>
+                  <p className="text-right">
+                    {(totals.totalCGST || 0).toFixed(2)}
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 mt-2">
                   <p>SGST</p>
-                  <p>{(totals.totalSGST || 0).toFixed(2)})</p>
+                  <p className="text-right">
+                    {(totals.totalSGST || 0).toFixed(2)}
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 mt-2">
                   <p>IGST</p>
-                  <p>{totals.totalIGST}</p>
+                  <p className="text-right">{totals.totalIGST}</p>
                 </div>
                 <div className="grid grid-cols-2 mt-2">
                   <p>UGST</p>
-                  <p>0</p>
+                  <p className="text-right">0</p>
                 </div>
                 <div className="grid grid-cols-2 mt-2">
                   <p>Packages Charges</p>
-                  <p>{(fetcheddata?.data.packageCharges || 0).toFixed(2)}</p>
+                  <p className="text-right">
+                    {(fetcheddata?.data.packageCharges || 0).toFixed(2)}
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 mt-2">
                   <p>Transportation Charges</p>
-                  <p>{(fetcheddata?.data.transportCharges || 0).toFixed(2)}</p>
+                  <p className="text-right">
+                    {(fetcheddata?.data.transportCharges || 0).toFixed(2)}
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 mt-2">
                   <p>Other Costs</p>
-                  <p>{(fetcheddata?.data.otherCosts || 0).toFixed(2)}</p>
+                  <p className="text-right">
+                    {(fetcheddata?.data.otherCosts || 0).toFixed(2)}
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 my-3">
                   <p className="font-bold">Grand Total (rs)</p>
-                  <p className="font-bold">
+                  <p className="font-bold text-right">
                     {(fetcheddata?.data.grandTotal || 0).toFixed(2)}
                   </p>
                 </div>
               </div>
             </div>
-            <div className="px-2 mt-2">
+            <div className="px-2 mt-2 ">
               <p className="font-bold">Terms & Conditions :</p>
-              <p className="mt-2">PAYMENT TERMS :</p>
-              <p className="mt-2 uppercase">1. {fetcheddata?.data.term1}</p>
-              <p className="mt-2 uppercase">2. {fetcheddata?.data.term2}</p>
-              <p className="mt-2 uppercase">3. {fetcheddata?.data.term3}</p>
-              <p className="mt-2 uppercase">4. {fetcheddata?.data.term4}</p>
+              <div className=" flex ">
+                <div>
+                  <p className="mt-2">PAYMENT TERMS :</p>
+                </div>
+                <div className="ml-3">
+                  <p className="mt-2 uppercase">1. {fetcheddata?.data.term1}</p>
+                  <p className="mt-2 uppercase">2. {fetcheddata?.data.term2}</p>
+                  <p className="mt-2 uppercase">3. {fetcheddata?.data.term3}</p>
+                  <p className="mt-2 uppercase">4. {fetcheddata?.data.term4}</p>
+                </div>
+              </div>
               <p className="text-center mt-2">Thank you</p>
               <p className="mt-2">
                 We are looking forward to receive your valuable orders and
@@ -378,17 +394,13 @@ const Page = ({ params }) => {
         </div>
       </div>
       <div className="flex justify-between mx-5 mb-5">
-        <div   className="rounded-md p-2 border-2 flex items-center bg-blue-500 text-white" >
-        <ArrowLeftIcon className="w-4 h-4 mr-1" />
-        <Link
-          href={`/quotationedit?id=${params.slug}`}
-        
-        >
-          <p>Return to edit</p>
-        </Link>
-
+        <div className="rounded-md p-2 border-2 flex items-center bg-blue-500 text-white">
+          <ArrowLeftIcon className="w-4 h-4 mr-1" />
+          <Link href={`/quotationedit?id=${params.slug}`}>
+            <p>Return to edit</p>
+          </Link>
         </div>
-     
+
         <button
           onClick={pdfDownload}
           className="rounded-md p-2 border-2 flex items-center bg-green-500 text-white"

@@ -66,7 +66,7 @@ export default function Page() {
     }));
   };
 
-  const handleRowChange = (index, e) => {
+  const   handleRowChange = (index, e) => {
     const { name, value } = e.target;
     const updatedItems = [...formData.items];
   
@@ -285,10 +285,10 @@ export default function Page() {
                     type="text"
                     name="name"
                     value={item.name}
-                    onChange={(e) => handleRowChange(index, e)}
+                    onChange={(e) => handleRowChange(i, e)}
                     placeholder="Name"
                     className="w-full border h-10 border-r-gray-300 rounded p-2 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
-                    {...register("name", { required: "Item name is required" })}
+                 
                   />
                     {errors.name && (
                       <p className="text-red-500">{errors.name.message}</p>
@@ -299,7 +299,7 @@ export default function Page() {
                     type="text"
                     name="hsn"
                     value={item.hsn}
-                    onChange={(e) => handleRowChange(index, e)}
+                    onChange={(e) => handleRowChange(i, e)}
                     placeholder="HSN"
                     className="w-full border rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
                   />
@@ -310,8 +310,8 @@ export default function Page() {
                     type="number"
                     name="qty"
                     value={item.qty}
-                    onChange={(e) => handleRowChange(index, e)}
-                    {...register("qty", { required: "QTY is required" })}
+                    onChange={(e) => handleRowChange(i, e)}
+                  
                     placeholder="Qty"
                     className="w-full text-right border rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
                     
@@ -324,7 +324,7 @@ export default function Page() {
                   <select 
                     name="umoremarks" 
                     value={item.umoremarks} 
-                    onChange={(e) => handleRowChange(index, e)}
+                    onChange={(e) => handleRowChange(i, e)}
                     className="border rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
                   >
                     <option value="NOS">NOS</option>
@@ -336,7 +336,7 @@ export default function Page() {
                   <textarea
                     name="remarks"
                     value={item.remarks}
-                    onChange={(e) => handleRowChange(index, e)}
+                    onChange={(e) => handleRowChange(i, e)}
                     placeholder="Remarks"
                     className="w-full border h-14 rounded p-1 shadow-sm focus:outline-none focus:ring focus:ring-blue-300"
                   />
