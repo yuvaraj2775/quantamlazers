@@ -4,15 +4,16 @@ import {
   PencilSquareIcon,
   ArrowDownTrayIcon,
 } from "@heroicons/react/24/solid";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { IoSaveOutline } from "react-icons/io5";
 import { Switch } from "@headlessui/react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+// import "jspdf-autotable";
 
 export default function Home() {
   const [editingItem, setEditingItem] = useState(null);
   const [enabledItems, setEnabledItems] = useState({});
-
-  const [selected, setSelected] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     qty: "",
@@ -21,26 +22,57 @@ export default function Home() {
   });
   const [fetched, setFetched] = useState([]);
   const [selectedItems, setSelectedItems] = useState({});
-  const [deleteMarkedItems, setDeleteMarkedItems] = useState({});
+  
+  const formRef = useRef(null); // Ref for the form
+  const tableRef = useRef(null); // Ref for the table
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+
+  const pdfRef = useRef();
+
+  const pdfDownload = async () => {
+    const input = pdfRef.current;
+  
+    // Use html2canvas to capture the table as an image
+    const canvas = await html2canvas(input, {
+      scale: 2,
+      useCORS: true,  // Use this to resolve issues with cross-origin resources
+      logging: true,  // Enable logging to see issues in the console
+    });
+  
+    const imgData = canvas.toDataURL("image/png");
+  
+    // Create a new jsPDF instance
+    const pdf = new jsPDF("p", "pt", "a4");
+  
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+  
+    // Calculate image dimensions
+    const imgWidth = pdfWidth - 40; // Leave some margin
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  
+    pdf.addImage(imgData, "PNG", 20, 20, imgWidth, imgHeight);
+  
+    // Save the PDF
+    pdf.save("Item-Master.pdf");
+  };
+  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch("/api/itemmaster");
-        if (!response.ok) {
-          throw new Error("Failed to fetch data");
-        }
+        if (!response.ok) throw new Error("Failed to fetch data");
         const result = await response.json();
         setFetched(result.data || []);
-
-        // Initialize enabledItems with true for each item
         const initialEnabledState = {};
         result.data.forEach((item) => {
-          initialEnabledState[item.id] = true; // Default to true
+          initialEnabledState[item.id] = item.enabled === 1;
         });
         setEnabledItems(initialEnabledState);
       } catch (error) {
@@ -59,55 +91,58 @@ export default function Home() {
       comments: item.comments || "",
     });
     setEditingItem(item.id);
+
+    // Scroll to the form when editing
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   const handleSubmit = async (e) => {
-    console.log('handleSubmit called');
     e.preventDefault();
-  
     const method = editingItem ? "PUT" : "POST";
-    const endpoint = editingItem ? `/api/itemmaster/${editingItem}` : "/api/itemmaster";
-  
-    console.log('Request method:', method);
-    console.log('Request endpoint:', endpoint);
-  
+    const endpoint =  "/api/itemmaster";
+
     try {
-      const response = await fetch( "/api/itemmaster", { // Use the correct endpoint here
+      const response = await fetch(endpoint, {
         method,
         body: JSON.stringify({
           ...formData,
-          id: editingItem || undefined, // Set id only if editing
+          quantity: Number(formData.qty),
+          id: editingItem || undefined,
+          enabled: editingItem ? enabledItems[editingItem] : 0,
         }),
         headers: { "Content-Type": "application/json" },
       });
-  
-      console.log('Response received');
-  
+
       const result = await response.json();
-      console.log('Response JSON:', result);
-  
       if (!response.ok) throw new Error(result.error || "Something went wrong");
-  
+
       if (editingItem) {
-        console.log('Updating existing item');
         setFetched((prev) =>
           prev.map((item) =>
-            item.id === editingItem ? { ...item, ...formData } : item
+            item.id === editingItem ? { ...item, ...formData, quantity: Number(formData.qty) } : item
           )
         );
       } else {
-        console.log('Adding new item');
-        setFetched((prev) => [...prev, { ...formData, id: result.id }]);
+        setFetched((prev) => [
+          ...prev,
+          { ...formData, id: result.id, quantity: Number(formData.qty), enabled: 0 },
+        ]);
+        setEnabledItems((prev) => ({ ...prev, [result.id]: true }));
       }
-  
-      console.log('Resetting form data');
+
       setFormData({ name: "", qty: "", description: "", comments: "" });
       setEditingItem(null);
+
+      // Scroll back to the table after saving
+      if (tableRef.current) {
+        tableRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     } catch (error) {
       console.error("Error while submitting:", error);
     }
   };
-  
 
   const handleCheckboxChange = (id) => {
     setSelectedItems((prev) => ({
@@ -115,51 +150,32 @@ export default function Home() {
       [id]: !prev[id],
     }));
   };
-  
-  const handleToggleChange = async (id) => {
+
+  const handleToggleChange = async (item, id) => {
     const currentState = enabledItems[id];
     const newEnabledState = !currentState;
-
-    // Debugging: Log the current formData
-    console.log("Current formData:", formData);
-
-    // Update the enabledItems state
-    setEnabledItems((prev) => ({
-        ...prev,
-        [id]: newEnabledState,
-    }));
+    setEnabledItems((prev) => ({ ...prev, [id]: newEnabledState }));
 
     try {
-        // Prepare the body for the request, using the current formData
-        const response = await fetch(`/api/itemmaster`, {
-            method: "PUT",
-            body: JSON.stringify({
-                id, // Keep id in the body
-                enabled: newEnabledState, // Only the toggle value changes
-                // Keep existing values in formData intact
-                name: formData.name || "", // Default to empty if not defined
-                qty: formData.qty || "",
-                description: formData.description || "",
-                comments: formData.comments || "",
-            }),
-            headers: { "Content-Type": "application/json" },
-        });
+      const response = await fetch(`/api/itemmaster`, {
+        method: "PUT",
+        body: JSON.stringify({
+          id,
+          enabled: newEnabledState ? 1 : 0,
+          name: item.name || "",
+          qty: item.quantity || "",
+          description: item.description || "",
+          comments: item.comments || "",
+        }),
+        headers: { "Content-Type": "application/json" },
+      });
 
-        if (!response.ok) {
-            throw new Error("Failed to update item status");
-        }
+      if (!response.ok) throw new Error("Failed to update item status");
     } catch (error) {
-        console.error("Error while updating item status:", error);
-        setEnabledItems((prev) => ({
-            ...prev,
-            [id]: currentState, // Revert if there's an error
-        }));
+      console.error("Error while updating item status:", error);
+      setEnabledItems((prev) => ({ ...prev, [id]: currentState }));
     }
-};
-
-
-
-  
+  };
 
   const handleSelectAll = (e) => {
     const isChecked = e.target.checked;
@@ -170,28 +186,15 @@ export default function Home() {
     setSelectedItems(newSelection);
   };
 
-  const handleDeleteCheckboxChange = (id) => {
-    setDeleteMarkedItems((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const handleDelete = async (id) => {
-    // Delete logic here
-  };
-
   return (
-    <div className="max-w-4xl mx-auto p-5 h-screen overflow-y-auto ">
-      <form onSubmit={handleSubmit}>
+    <div className="max-w-4xl mx-auto p-5 h-screen overflow-y-auto">
+      <form onSubmit={handleSubmit} ref={formRef}>
         <h1 className="text-center text-3xl mt-5 font-bold">Item Master</h1>
 
         <div className="mt-6 space-y-4">
           <div className="flex space-x-4">
-            <div className="w-3/4">
-              <label htmlFor="name" className="block font-medium">
-                Name
-              </label>
+            <div className="w-[90%]">
+              <label htmlFor="name" className="block font-medium">Name</label>
               <input
                 type="text"
                 value={formData.name}
@@ -201,10 +204,8 @@ export default function Home() {
                 id="name"
               />
             </div>
-            <div className="w-1/4">
-              <label htmlFor="minquantity" className="block font-medium">
-                Minimum Quantity
-              </label>
+            <div className="w-[10%]">
+              <label htmlFor="minquantity" className="block font-medium">Min Qty</label>
               <input
                 type="number"
                 onChange={handleChange}
@@ -216,9 +217,7 @@ export default function Home() {
             </div>
           </div>
           <div>
-            <label htmlFor="description" className="block font-medium">
-              Description
-            </label>
+            <label htmlFor="description" className="block font-medium">Description</label>
             <textarea
               className="border-2 border-gray-300 rounded-md resize-none w-full p-2"
               name="description"
@@ -230,9 +229,7 @@ export default function Home() {
             />
           </div>
           <div>
-            <label htmlFor="comments" className="block font-medium">
-              Comments
-            </label>
+            <label htmlFor="comments" className="block font-medium">Comments</label>
             <textarea
               name="comments"
               value={formData.comments}
@@ -254,11 +251,12 @@ export default function Home() {
         </div>
       </form>
 
-      <div className="mt-8">
+      {/* ref={tableRef} */}
+      <div className="mt-8" ref={pdfRef}>
         <table className="min-w-full border border-gray-300">
           <thead className="bg-gray-100">
             <tr>
-              <th className="border border-gray-300 px-4 py-2 text-left">
+              <th className="border border-gray-300 px-2 text-left py-2">
                 <input
                   type="checkbox"
                   onChange={handleSelectAll}
@@ -268,26 +266,15 @@ export default function Home() {
               <th className="border border-gray-300 px-2 py-2">NO</th>
               <th className="border border-gray-300 px-2 py-2">Name</th>
               <th className="border border-gray-300 px-2 py-2">Description</th>
-              <th className="border border-gray-300 px-2 py-2">
-                Min <br /> Qty
-              </th>
+              <th className="border border-gray-300 px-2 py-2">Min <br /> Qty</th>
               <th className="border border-gray-300 px-2 py-2">Actions</th>
-              <th className="border border-gray-300 px-2 py-2"> Is enabled</th>
+              <th className="border border-gray-300 px-2 py-2">Is Enabled</th>
             </tr>
           </thead>
           <tbody>
             {fetched.map((item, i) => (
-              <tr
-                key={item.id}
-                className={
-                  editingItem === item.id
-                    ? "text-green-700"
-                    : deleteMarkedItems[item.id]
-                    ? "text-red-700"
-                    : ""
-                }
-              >
-                <td className="border border-gray-300 px-4 py-2">
+              <tr key={item.id} className={editingItem === item.id ? "text-green-700" : ""}>
+                <td className="border border-gray-300 px-2 py-2">
                   <input
                     type="checkbox"
                     checked={!!selectedItems[item.id]}
@@ -297,41 +284,30 @@ export default function Home() {
                 <td className="border border-gray-300 px-2 py-2">
                   {`IT${String(i + 1).padStart(3, "0")}`}
                 </td>
-                <td className="border border-gray-300 px-2 py-2">
-                  {item.name}
-                </td>
-
-                <td className="border border-gray-300 px-2 py-2">
-                  {item.description}
-                </td>
-                <td className="border border-gray-300 px-2 py-2 text-right">
-                  {item.quantity}
-                </td>
-
+                <td className="border border-gray-300 px-2 py-2">{item.name}</td>
+                <td className="border border-gray-300 px-2 py-2">{item.description}</td>
+                <td className="border border-gray-300 px-2 py-2 text-right">{item.quantity}</td>
                 <td className="border border-gray-300 px-2 text-center py-2">
                   <button
                     onClick={() => handleEdit(item)}
                     className="bg-blue-500 text-white p-1 rounded-md"
                   >
-                    <PencilSquareIcon className="w-4 h-4" />
+                    <PencilSquareIcon className="w-4 h-4"  />
                   </button>
                 </td>
-
                 <td className="border border-gray-300 px-2 text-center py-2">
                   <Switch
-                    checked={!!enabledItems[item.id]}
-                    onChange={() => handleToggleChange(item.id)}
+                    checked={enabledItems[item.id] || true}
+                    onChange={() => handleToggleChange(item, item.id)}
                     className={`group relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent 
-                ${enabledItems[item.id] ? "bg-green-600" : "bg-red-600"} 
-                transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2`}
+                      ${enabledItems[item.id] ? "bg-green-600" : "bg-red-600"} 
+                      transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-green-600 focus:ring-offset-2`}
                   >
                     <span className="sr-only">Use setting</span>
                     <span
                       aria-hidden="true"
                       className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 
-                  transition duration-200 ease-in-out ${
-                    enabledItems[item.id] ? "translate-x-5" : ""
-                  }`}
+                        transition duration-200 ease-in-out ${enabledItems[item.id] ? "translate-x-5" : ""}`}
                     />
                   </Switch>
                 </td>
@@ -342,7 +318,9 @@ export default function Home() {
       </div>
 
       <div className="my-5 flex justify-end">
-        <button className="rounded-md p-2 border-2  flex items-center bg-green-500 text-white">
+        <button className="rounded-md p-2 border-2 flex items-center bg-green-500 text-white"
+        onClick={pdfDownload}
+        >
           <ArrowDownTrayIcon className="w-4 h-4 mr-1" />
           <span>Download</span>
         </button>
