@@ -54,11 +54,11 @@ const Invoicesummary = ({ grandTotalInWords, totals, items, input }) => {
           <p className="text-sm">Sub-Total Amt</p>
           <p className="text-sm text-right">{totals.subTotal.toFixed(2)}</p>
         </div>
-        <div className="grid grid-cols-2 mt-2">
+        <div className="grid grid-cols-2 mt-1">
           <p className="text-sm">Discount ({input.discount || 0}%)</p>
           <p className="text-sm text-right">{totals.discountAmount.toFixed(2)}</p>
         </div>
-        <div className="grid grid-cols-2 mt-2">
+        <div className="grid grid-cols-2 mt-1">
           <p className="text-sm">CGST</p>
           <p className="text-sm text-right">
             {totals.totalTax > 0 && items.some((item) => item.taxtype === "CGST")
@@ -66,7 +66,7 @@ const Invoicesummary = ({ grandTotalInWords, totals, items, input }) => {
               : "0.00"}
           </p>
         </div>
-        <div className="grid grid-cols-2 mt-2">
+        <div className="grid grid-cols-2 mt-1">
           <p className="text-sm">SGST</p>
           <p className="text-sm text-right">
             {totals.totalTax > 0 && items.some((item) => item.taxtype === "CGST")
@@ -74,7 +74,7 @@ const Invoicesummary = ({ grandTotalInWords, totals, items, input }) => {
               : "0.00"}
           </p>
         </div>
-        <div className="grid grid-cols-2 mt-2">
+        <div className="grid grid-cols-2 mt-1">
           <p className="text-sm">IGST</p>
           <p className="text-sm text-right">
             {totals.totalTax > 0 && items.every((item) => item.taxtype === "IGST")
@@ -82,7 +82,7 @@ const Invoicesummary = ({ grandTotalInWords, totals, items, input }) => {
               : "0.00"}
           </p>
         </div>
-        <div className="grid grid-cols-2 mt-2">
+        <div className="grid grid-cols-2 mt-1">
           <p className="text-sm">UGST</p>
           <p className="text-sm text-right">
             {totals.totalTax > 0 && items.every((item) => item.taxtype === "UGST")
@@ -90,19 +90,19 @@ const Invoicesummary = ({ grandTotalInWords, totals, items, input }) => {
               : "0.00"}
           </p>
         </div>
-        <div className="grid grid-cols-2 mt-2">
+        <div className="grid grid-cols-2 mt-1">
           <p className="text-sm">Package Charges</p>
           <p className="text-sm text-right">{input.packages || 0}</p>
         </div>
-        <div className="grid grid-cols-2 mt-2">
+        <div className="grid grid-cols-2 mt-1">
           <p className="text-sm">Transportation Charges</p>
           <p className="text-sm text-right">{input.transport || 0.0}</p>
         </div>
-        <div className="grid grid-cols-2 mt-2">
+        <div className="grid grid-cols-2 mt-1">
           <p className="text-sm">Other Cost</p>
           <p className="text-sm text-right">{input.othercost || 0}</p>
         </div>
-        <div className="grid grid-cols-2 mt-2">
+        <div className="grid grid-cols-2 mt-1">
           <p className="text-sm">Grand Total (RS)</p>
           <p className="text-sm text-right">{totals.grandTotal.toFixed(2)}</p>
         </div>

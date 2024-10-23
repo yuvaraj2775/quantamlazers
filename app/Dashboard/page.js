@@ -20,6 +20,11 @@ export default function  Dashboard() {
       href: "/delivery",
       icon: ClipboardDocumentListIcon,
     },
+    {
+      name: "Item Master",
+      href: "/Itemmaster",
+      icon: ClipboardDocumentListIcon,
+    },
   ];
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");

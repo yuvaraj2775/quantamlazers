@@ -44,7 +44,7 @@ const Page = () => {
     term3: "",
     term4: "",
   });
-  const [fetched, setfetched] = useState(null);
+  const [fetched, setfetched] = useState([]);
   const [items, setItems] = useState([
     {
       description: "",
@@ -251,7 +251,8 @@ const Page = () => {
 
   console.log(totalss, "totals");
 
-  const dataed = fetched?.data.length ? fetched.data[0].id + 1 : null;
+  const dataed = fetched?.data?.length ? fetched.data[0].id + 1 : null;
+
 
   const onSubmit = async (data) => {
     try {

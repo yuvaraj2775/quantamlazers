@@ -6,40 +6,52 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import Link from "next/link";
 import { toWords } from "number-to-words";
+import QuotationFooter from "../components/QuotationFooter";
+import ItemTableComponent from "../components/ItemTableComponent";
+import TotalsComponent from "../components/TotalsComponent";
+import TermsConditionsComponent from "../components/TermsConditionsComponent";
 
 const Page = ({ params }) => {
   const [fetcheddata, setFetchedData] = useState(null);
   const router = useRouter();
   const pdfRef = useRef();
 
+  // Function to download the PDF
   const pdfDownload = async () => {
     const input = pdfRef.current;
-    const inputWidth = input.clientWidth;
-    const inputHeight = input.clientHeight;
 
-    const margin = 0.02;
-    const pdfWidth = 700.28;
-    const pdfHeight = Math.min(inputHeight, 841.89);
+    // Capture the current width and height of the HTML content
+    const inputWidth = input.scrollWidth;
+    const inputHeight = input.scrollHeight;
 
-    const pdf = new jsPDF("p", "pt", [pdfWidth, pdfHeight]);
+    // Set the PDF dimensions (A4 size in points: 595.28 x 841.89)
+    const pdfWidth = 595.28;
+    const pdfHeight = 841.89;
+    const margin = 10; // Margin from the edges
 
-    html2canvas(input, { scale: 1.5 }).then((canvas) => {
+    // Calculate the ratio of the input dimensions to PDF size
+    const ratio = Math.min(
+      (pdfWidth - margin * 2) / inputWidth,
+      (pdfHeight - margin * 2) / inputHeight
+    );
+
+    // Use html2canvas to capture the content as an image
+    html2canvas(input, { scale: 1 }).then((canvas) => {
       const imgData = canvas.toDataURL("image/png");
 
-      const imgWidth = pdfWidth * (1 - margin * 2);
-      const imgHeight = canvas.height * imgWidth;
+      // Create jsPDF instance
+      const pdf = new jsPDF("p", "pt", "a4");
 
-      const topMargin = pdfHeight * margin;
-      const leftMargin = pdfWidth * margin;
-      const imgX = leftMargin;
-      const imgY = topMargin;
+      // Calculate the image dimensions based on the scaling ratio
+      const imgWidth = inputWidth * ratio;
+      const imgHeight = inputHeight * ratio;
 
-      const adjustedHeight =
-        imgHeight > pdfHeight - topMargin * 2
-          ? pdfHeight - topMargin * 2
-          : imgHeight;
+      // Center the content on the page
+      const x = (pdfWidth - imgWidth) / 2;
+      const y = margin;
 
-      pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth, adjustedHeight);
+      // Add the image to the PDF
+      pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
       pdf.save("Quotation-challan.pdf");
     });
   };
@@ -97,7 +109,6 @@ const Page = ({ params }) => {
   const totals = calculateTotals();
   const fulltotals = {
     grandTotal: parseFloat((totals.grandTotal || 0).toFixed(2)), // Convert to a number
-    // other totals...
   };
   let grandTotalInWords = toWords(fulltotals.grandTotal);
 
@@ -137,259 +148,22 @@ const Page = ({ params }) => {
               <h3 className="tracking-widest mt-1">Quotation</h3>
             </div>
             {/* Buyer Info */}
-            <div className="flex w-full border-y-2 mt-10 border-black">
-              <div className="border-r-2 px-2 py-3 w-3/5  border-black">
-                <p className="font-bold uppercase">Buyer :</p>
-                <pre className="uppercase mt-2">
-                  {fetcheddata?.data.Address}
-                </pre>
 
-                <div className="grid grid-cols-2 mt-2">
-                  <p className="font-bold mt-3">GST NO </p>
-                  <p>: {fetcheddata?.data.gstnumber}</p>
-                </div>
-                <div className="grid grid-cols-2 mt-2">
-                  <p className="uppercase font-bold ">Kind Attention </p>
-                  <p className="font-normal">
-                    : {fetcheddata?.data.kindattention}
-                  </p>
-                </div>
-              </div>
-              <div className="px-2  w-2/5 capitalize font-semibold">
-                <div className="mt-2 grid pb-3 grid-cols-2">
-                  <label>Quotation ID</label>
-                  <p className="font-normal">: {fetcheddata?.data.id}</p>
-                  <label className="mt-2">Date</label>
-                  <p className="font-normal mt-2">: {fetcheddata?.data.Date}</p>
-                  <label className="mt-2">Ref NO</label>
-                  <p className="font-normal mt-2 uppercase">
-                    : {fetcheddata?.data.reference}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className=" flex items-center border-b-2 my-7 pb-5 pl-5 border-black">
-              <p className="font-bold mr-3">Subject</p>
-              <p className="uppercase">: {fetcheddata?.data.subject}</p>
-            </div>
-            <div className="flex items-center pb-5">
-              <p className="ml-5">
-                We are pleased to submit the following quote as requested
-              </p>
-            </div>
+            <QuotationFooter fetcheddata={fetcheddata} />
+
             {/* Items Table */}
-            <div className="">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="text-xs border-t-2 border-b-2 border-black h-12">
-                    <th className="border-b-2 border-r-2 border-black p-2">
-                      SL. No.
-                    </th>
-                    <th className="border-2 border-black p-2 ">
-                      Item Name / Description
-                    </th>
-                    <th className="border-2 border-black p-2">HSN Code</th>
-                    <th className="border-2 border-black p-2">Qty</th>
-                    <th className="border-2 border-black p-2">Unit</th>
-                    <th className="border-2 border-black p-2">Unit Cost</th>
-                    <th className="border-2 border-black p-2">Taxable Value</th>
-                    <th className="border-2 border-black p-0 w-32 h-4">
-                      <div className="flex flex-col">
-                        <p className="border-b-2 border-black p-2">
-                          CGST/IGST Rate
-                        </p>
-                        <div className="flex flex-row">
-                          <p className="border-r-2 border-black text-center p-2 w-[30%]">
-                            %
-                          </p>
-                          <p className="text-center p-2 w-[70%]">Tax Amt</p>
-                        </div>
-                      </div>
-                    </th>
 
-                    <th className=" border-black p-0 w-32 h-4">
-                      <div className="flex flex-col">
-                        <p className="border-b-2 border-black p-2">
-                          SGST/UGST Rate
-                        </p>
-                        <div className="flex flex-row">
-                          <p className="border-r-2 border-black text-center p-2 w-[30%]">
-                            %
-                          </p>
-                          <p className="text-center p-2 w-[70%]">Tax Amt</p>
-                        </div>
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fetcheddata?.itemdata.map((item, index) => (
-                    <tr className="text-xs text-right" key={item.id || index}>
-                      <td className="border-r-2 capitalize border-black p-2 text-center">
-                        {index + 1}
-                      </td>
-                      <td className="border-r-2 capitalize border-black p-2 text-left">
-                        {item.description}
-                      </td>
-                      <td className="border-r-2 border-black p-2 text-center">
-                        {item.hsncode}
-                      </td>
-                      <td className="border-r-2 border-black p-2">
-                        {item.qty}
-                      </td>
-                      <td className="border-r-2 border-black p-2">
-                        {item.unit}
-                      </td>
-                      <td className="border-r-2 border-black p-2">
-                        {item.unitCost}
-                      </td>
-                      <td className="border-r-2 border-black p-2 text-right">
-                        {item.taxableValue}
-                      </td>
-                      <td className="border-r-0 border-black p-0 w-32 h-16">
-                        <div className="flex flex-row items-center justify-center h-full">
-                          <p className="border-r-2 border-black text-right p-2 w-[30%] h-full flex items-center justify-center">
-                            {item.percentage}
-                          </p>
-                          <p className="border-r-2 border-black text-right p-2 w-[70%] h-full flex items-center justify-center">
-                            {item.taxamt}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="border-r-0 border-black p-0 w-32 h-16">
-                        <div className="flex flex-row items-center justify-center h-full">
-                          <p className="border-r-2 border-black text-right p-2 w-[30%] h-full flex items-center justify-center">
-                            {item.percentage2}
-                          </p>
-                          <p className="border-r-0 border-black text-right p-2 w-[70%] h-full flex items-center justify-center">
-                            {item.taxamt2}
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  <tr className="border-t-2 border-b-2 h-14 border-black text-sm">
-                    <td className="p-2 px-16 font-bold" colSpan="3">
-                      Total No. of Qty
-                    </td>
-                    <td className="p-2 text-right font-bold" colSpan="1">
-                      {fetcheddata?.itemdata.reduce(
-                        (total, item) => total + parseInt(item.qty),
-                        0
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <ItemTableComponent fetcheddata={fetcheddata} />
+
             {/* Summary Section */}
 
-            <div className="border-b-2 border-black grid grid-cols-2 px-2">
-              <div>
-                <div>
-                  <p className="font-bold mt-2">Grand Totals</p>
-                  <p className="capitalize">{grandTotalInWords}</p>
-                </div>
-                <div>
-                  <p className="font-bold mt-2">Tax Amount</p>
-                  <div className="flex justify-evenly">
-                    <p className="grid grid-cols-2 ">
-                      CGST <span>: {totals.totalCGST}</span>
-                    </p>
-                    <p className="grid grid-cols-2">
-                      IGST <span>: {totals.totalIGST}</span>
-                    </p>
-                  </div>
-                  <div className="flex justify-evenly ml-2">
-                    <p className="grid grid-cols-2">
-                      SGST <span>: {(totals.totalSGST || 0).toFixed(2)}</span>
-                    </p>
-                    <p className="grid grid-cols-2 ml-2">
-                      UGST <span>: 0.00</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="w-[70%]">
-                <div className="grid grid-cols-2 mt-2 ">
-                  <p className="font-bold">Sub-Total Amt</p>
-                  <p className="text-right">{totals.subtotal}</p>
-                </div>
-                <div className="grid grid-cols-2 mt-2">
-                  <p>
-                    Discount ({(fetcheddata?.data.discount || 0).toFixed(2)}%)
-                  </p>
-                  <p className="text-right">{totals.discountAmount}</p>
-                </div>
-                <div className="grid grid-cols-2 mt-2">
-                  <p>CGST</p>
-                  <p className="text-right">
-                    {(totals.totalCGST || 0).toFixed(2)}
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 mt-2">
-                  <p>SGST</p>
-                  <p className="text-right">
-                    {(totals.totalSGST || 0).toFixed(2)}
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 mt-2">
-                  <p>IGST</p>
-                  <p className="text-right">{totals.totalIGST}</p>
-                </div>
-                <div className="grid grid-cols-2 mt-2">
-                  <p>UGST</p>
-                  <p className="text-right">0</p>
-                </div>
-                <div className="grid grid-cols-2 mt-2">
-                  <p>Packages Charges</p>
-                  <p className="text-right">
-                    {(fetcheddata?.data.packageCharges || 0).toFixed(2)}
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 mt-2">
-                  <p>Transportation Charges</p>
-                  <p className="text-right">
-                    {(fetcheddata?.data.transportCharges || 0).toFixed(2)}
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 mt-2">
-                  <p>Other Costs</p>
-                  <p className="text-right">
-                    {(fetcheddata?.data.otherCosts || 0).toFixed(2)}
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 my-3">
-                  <p className="font-bold">Grand Total (rs)</p>
-                  <p className="font-bold text-right">
-                    {(fetcheddata?.data.grandTotal || 0).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="px-2 mt-2 ">
-              <p className="font-bold">Terms & Conditions :</p>
-              <div className=" flex ">
-                <div>
-                  <p className="mt-2">PAYMENT TERMS :</p>
-                </div>
-                <div className="ml-3">
-                  <p className="mt-2 uppercase">1. {fetcheddata?.data.term1}</p>
-                  <p className="mt-2 uppercase">2. {fetcheddata?.data.term2}</p>
-                  <p className="mt-2 uppercase">3. {fetcheddata?.data.term3}</p>
-                  <p className="mt-2 uppercase">4. {fetcheddata?.data.term4}</p>
-                </div>
-              </div>
-              <p className="text-center mt-2">Thank you</p>
-              <p className="mt-2">
-                We are looking forward to receive your valuable orders and
-                assure your best attention at all times
-              </p>
-              <div className="text-right">
-                <p className="font-bold">For QUANTUM LASERS</p>
-                <p className="font-bold my-9">Authorised Signatory</p>
-              </div>
-            </div>
+            <TotalsComponent
+              grandTotalInWords={grandTotalInWords}
+              totals={totals}
+              fetcheddata={fetcheddata}
+            />
+
+            <TermsConditionsComponent fetcheddata={fetcheddata} />
           </div>
         </div>
       </div>
