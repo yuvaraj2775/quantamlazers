@@ -22,7 +22,8 @@ export default function Home() {
   });
   const [fetched, setFetched] = useState([]);
   const [selectedItems, setSelectedItems] = useState({});
-  
+  const [displayedItems, setDisplayedItems] = useState([]);
+
   const formRef = useRef(null); // Ref for the form
   const tableRef = useRef(null); // Ref for the table
 
@@ -31,37 +32,35 @@ export default function Home() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-
   const pdfRef = useRef();
 
   const pdfDownload = async () => {
     const input = pdfRef.current;
-  
+
     // Use html2canvas to capture the table as an image
     const canvas = await html2canvas(input, {
       scale: 2,
-      useCORS: true,  // Use this to resolve issues with cross-origin resources
-      logging: true,  // Enable logging to see issues in the console
+      useCORS: true, // Use this to resolve issues with cross-origin resources
+      logging: true, // Enable logging to see issues in the console
     });
-  
+
     const imgData = canvas.toDataURL("image/png");
-  
+
     // Create a new jsPDF instance
     const pdf = new jsPDF("p", "pt", "a4");
-  
+
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-  
+
     // Calculate image dimensions
     const imgWidth = pdfWidth - 40; // Leave some margin
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-  
+
     pdf.addImage(imgData, "PNG", 20, 20, imgWidth, imgHeight);
-  
+
     // Save the PDF
     pdf.save("Item-Master.pdf");
   };
-  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,7 +100,7 @@ export default function Home() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const method = editingItem ? "PUT" : "POST";
-    const endpoint =  "/api/itemmaster";
+    const endpoint = "/api/itemmaster";
 
     try {
       const response = await fetch(endpoint, {
@@ -121,13 +120,20 @@ export default function Home() {
       if (editingItem) {
         setFetched((prev) =>
           prev.map((item) =>
-            item.id === editingItem ? { ...item, ...formData, quantity: Number(formData.qty) } : item
+            item.id === editingItem
+              ? { ...item, ...formData, quantity: Number(formData.qty) }
+              : item
           )
         );
       } else {
         setFetched((prev) => [
           ...prev,
-          { ...formData, id: result.id, quantity: Number(formData.qty), enabled: 0 },
+          {
+            ...formData,
+            id: result.id,
+            quantity: Number(formData.qty),
+            enabled: 0,
+          },
         ]);
         setEnabledItems((prev) => ({ ...prev, [result.id]: true }));
       }
@@ -144,12 +150,23 @@ export default function Home() {
     }
   };
 
-  const handleCheckboxChange = (id) => {
-    setSelectedItems((prev) => ({
+ const handleCheckboxChange = (id) => {
+  setSelectedItems((prev) => {
+    const newSelected = {
       ...prev,
       [id]: !prev[id],
-    }));
-  };
+    };
+
+    const selectedIds = Object.keys(newSelected).filter((key) => newSelected[key]);
+    const newDisplayedItems = selectedIds.length > 0
+      ? fetched.filter((item) => newSelected[item.id])
+      : fetched; // Show all fetched items if none are selected
+
+    setDisplayedItems(newDisplayedItems);
+    return newSelected;
+  });
+};
+  
 
   const handleToggleChange = async (item, id) => {
     const currentState = enabledItems[id];
@@ -194,7 +211,9 @@ export default function Home() {
         <div className="mt-6 space-y-4">
           <div className="flex space-x-4">
             <div className="w-[90%]">
-              <label htmlFor="name" className="block font-medium">Name</label>
+              <label htmlFor="name" className="block font-medium">
+                Name
+              </label>
               <input
                 type="text"
                 value={formData.name}
@@ -205,7 +224,9 @@ export default function Home() {
               />
             </div>
             <div className="w-[10%]">
-              <label htmlFor="minquantity" className="block font-medium">Min Qty</label>
+              <label htmlFor="minquantity" className="block font-medium">
+                Min Qty
+              </label>
               <input
                 type="number"
                 onChange={handleChange}
@@ -217,7 +238,9 @@ export default function Home() {
             </div>
           </div>
           <div>
-            <label htmlFor="description" className="block font-medium">Description</label>
+            <label htmlFor="description" className="block font-medium">
+              Description
+            </label>
             <textarea
               className="border-2 border-gray-300 rounded-md resize-none w-full p-2"
               name="description"
@@ -229,7 +252,9 @@ export default function Home() {
             />
           </div>
           <div>
-            <label htmlFor="comments" className="block font-medium">Comments</label>
+            <label htmlFor="comments" className="block font-medium">
+              Comments
+            </label>
             <textarea
               name="comments"
               value={formData.comments}
@@ -251,8 +276,7 @@ export default function Home() {
         </div>
       </form>
 
-      {/* ref={tableRef} */}
-      <div className="mt-8" ref={pdfRef}>
+      <div className="mt-8" ref={tableRef}>
         <table className="min-w-full border border-gray-300">
           <thead className="bg-gray-100">
             <tr>
@@ -266,14 +290,19 @@ export default function Home() {
               <th className="border border-gray-300 px-2 py-2">NO</th>
               <th className="border border-gray-300 px-2 py-2">Name</th>
               <th className="border border-gray-300 px-2 py-2">Description</th>
-              <th className="border border-gray-300 px-2 py-2">Min <br /> Qty</th>
+              <th className="border border-gray-300 px-2 py-2">
+                Min <br /> Qty
+              </th>
               <th className="border border-gray-300 px-2 py-2">Actions</th>
               <th className="border border-gray-300 px-2 py-2">Is Enabled</th>
             </tr>
           </thead>
           <tbody>
             {fetched.map((item, i) => (
-              <tr key={item.id} className={editingItem === item.id ? "text-green-700" : ""}>
+              <tr
+                key={item.id}
+                className={editingItem === item.id ? "text-green-700" : ""}
+              >
                 <td className="border border-gray-300 px-2 py-2">
                   <input
                     type="checkbox"
@@ -284,15 +313,21 @@ export default function Home() {
                 <td className="border border-gray-300 px-2 py-2">
                   {`IT${String(i + 1).padStart(3, "0")}`}
                 </td>
-                <td className="border border-gray-300 px-2 py-2">{item.name}</td>
-                <td className="border border-gray-300 px-2 py-2">{item.description}</td>
-                <td className="border border-gray-300 px-2 py-2 text-right">{item.quantity}</td>
+                <td className="border border-gray-300 px-2 py-2">
+                  {item.name}
+                </td>
+                <td className="border border-gray-300 px-2 py-2">
+                  {item.description}
+                </td>
+                <td className="border border-gray-300 px-2 py-2 text-right">
+                  {item.quantity}
+                </td>
                 <td className="border border-gray-300 px-2 text-center py-2">
                   <button
                     onClick={() => handleEdit(item)}
                     className="bg-blue-500 text-white p-1 rounded-md"
                   >
-                    <PencilSquareIcon className="w-4 h-4"  />
+                    <PencilSquareIcon className="w-4 h-4" />
                   </button>
                 </td>
                 <td className="border border-gray-300 px-2 text-center py-2">
@@ -307,7 +342,9 @@ export default function Home() {
                     <span
                       aria-hidden="true"
                       className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 
-                        transition duration-200 ease-in-out ${enabledItems[item.id] ? "translate-x-5" : ""}`}
+                        transition duration-200 ease-in-out ${
+                          enabledItems[item.id] ? "translate-x-5" : ""
+                        }`}
                     />
                   </Switch>
                 </td>
@@ -318,12 +355,55 @@ export default function Home() {
       </div>
 
       <div className="my-5 flex justify-end">
-        <button className="rounded-md p-2 border-2 flex items-center bg-green-500 text-white"
-        onClick={pdfDownload}
+        <button
+          className="rounded-md p-2 border-2 flex items-center bg-green-500 text-white"
+          onClick={pdfDownload}
         >
           <ArrowDownTrayIcon className="w-4 h-4 mr-1" />
-          <span>Download</span>
+          <span>GO to download</span>
         </button>
+      </div>
+
+      <div className="">
+        <h2 className="text-xl font-bold">Selected Items</h2>
+        <table className="min-w-full border  border-gray-300" ref={pdfRef}>
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border border-gray-300 px-2 py-2">NO</th>
+              <th className="border border-gray-300 px-2 py-2">Name</th>
+              <th className="border border-gray-300 px-2 py-2">Description</th>
+              <th className="border border-gray-300 px-2 py-2">
+                Min <br /> Qty
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {displayedItems.map((item) => {
+              const originalIndex = fetched.findIndex((f) => f.id === item.id); // Get the original index
+              const displayNumber = `IT${String(originalIndex + 1).padStart(
+                3,
+                "0"
+              )}`; // Format as needed
+
+              return (
+                <tr key={item.id}>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {displayNumber}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {item.name}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2">
+                    {item.description}
+                  </td>
+                  <td className="border border-gray-300 px-2 py-2 text-right">
+                    {item.quantity}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
