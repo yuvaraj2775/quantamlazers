@@ -16,12 +16,10 @@ export default function Home() {
   const [enabledItems, setEnabledItems] = useState({});
   const [formData, setFormData] = useState({
     name: "",
-    qty: "",
     description: "",
     comments: "",
   });
   const [fetched, setFetched] = useState([]);
-  console.log(fetched,"fetched")
 
   const [displayedItems, setDisplayedItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -61,13 +59,12 @@ export default function Home() {
     pdf.addImage(imgData, "PNG", 20, 20, imgWidth, imgHeight);
 
     // Save the PDF
-    pdf.save("Item-Master.pdf");
+    pdf.save("HSN-master.pdf");
   };
-  
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/itemmaster");
+        const response = await fetch("/api/hsnmaster");
         if (!response.ok) throw new Error("Failed to fetch data");
         const result = await response.json();
         setFetched(result.data || []);
@@ -89,7 +86,6 @@ export default function Home() {
   const handleEdit = (item) => {
     setFormData({
       name: item.name,
-      qty: item.quantity,
       description: item.description,
       comments: item.comments || "",
     });
@@ -104,14 +100,14 @@ export default function Home() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const method = editingItem ? "PUT" : "POST";
-    const endpoint = "/api/itemmaster";
+    const endpoint = "/api/hsnmaster";
 
     try {
       const response = await fetch(endpoint, {
         method,
         body: JSON.stringify({
           ...formData,
-          quantity: Number(formData.qty),
+        
           id: editingItem || undefined,
           enabled: editingItem ? enabledItems[editingItem] : 0,
         }),
@@ -125,7 +121,7 @@ export default function Home() {
         setFetched((prev) =>
           prev.map((item) =>
             item.id === editingItem
-              ? { ...item, ...formData, quantity: Number(formData.qty) }
+              ? { ...item, ...formData }
               : item
           )
         );
@@ -135,14 +131,14 @@ export default function Home() {
           {
             ...formData,
             id: result.id,
-            quantity: Number(formData.qty),
+            
             enabled: 0,
           },
         ]);
         setEnabledItems((prev) => ({ ...prev, [result.id]: true }));
       }
 
-      setFormData({ name: "", qty: "", description: "", comments: "" });
+      setFormData({ name: "",  description: "", comments: "" });
       setEditingItem(null);
 
       // Scroll back to the table after saving
@@ -182,13 +178,13 @@ export default function Home() {
     setEnabledItems((prev) => ({ ...prev, [id]: newEnabledState }));
 
     try {
-      const response = await fetch(`/api/itemmaster`, {
+      const response = await fetch(`/api/hsnmaster`, {
         method: "PUT",
         body: JSON.stringify({
           id,
           enabled: newEnabledState ? 1 : 0,
           name: item.name || "",
-          qty: item.quantity || "",
+        
           description: item.description || "",
           comments: item.comments || "",
         }),
@@ -229,11 +225,11 @@ export default function Home() {
   return (
     <div className="max-w-4xl mx-auto p-5 h-screen overflow-y-auto">
       <form onSubmit={handleSubmit} ref={formRef}>
-        <h1 className="text-center text-3xl mt-5 font-bold">Item Master</h1>
+        <h1 className="text-center text-3xl mt-5 font-bold">HSN Master</h1>
 
         <div className="mt-6 space-y-4">
           <div className="flex space-x-4">
-            <div className="w-[90%]">
+            <div className="w-full">
               <label htmlFor="name" className="block font-medium">
                 Name
               </label>
@@ -246,19 +242,7 @@ export default function Home() {
                 id="name"
               />
             </div>
-            <div className="w-[10%]">
-              <label htmlFor="minquantity" className="block font-medium">
-                Min Qty
-              </label>
-              <input
-                type="number"
-                onChange={handleChange}
-                value={formData.qty}
-                className="border-2 block border-gray-300 rounded-md w-full p-2"
-                name="qty"
-                id="minquantity"
-              />
-            </div>
+           
           </div>
           <div>
             <label htmlFor="description" className="block font-medium">
@@ -300,7 +284,7 @@ export default function Home() {
       </form>
 
       <div className="mt-8" ref={tableRef}>
-        <table className="min-w-full border border-gray-300">
+        <table className="min-w-full border border-black">
           <thead className="bg-gray-100">
             <tr>
               <th className="border border-black px-2 text-left py-2">
@@ -310,12 +294,10 @@ export default function Home() {
                   checked={fetched.every((item) => selectedItems[item.id])}
                 />
               </th>
-              <th className="border border-black px-2 py-2">Item Code</th>
+              <th className="border border-black px-2 py-2">HSN Code</th>
               <th className="border border-black px-2 py-2">Name</th>
               <th className="border border-black px-2 py-2">Description</th>
-              <th className="border border-black px-2 py-2">
-                Min <br /> Qty
-              </th>
+             
               <th className="border border-black px-2 py-2">Actions</th>
               <th className="border border-black px-2 py-2">Is Enabled</th>
             </tr>
@@ -334,7 +316,7 @@ export default function Home() {
                   />
                 </td>
                 <td className="border border-black px-2 py-2">
-                  {`IT${String(i + 1).padStart(3, "0")}`}
+                  {`HS${String(i + 1).padStart(3, "0")}`}
                 </td>
                 <td className="border border-black px-2 py-2">
                   {item.name}
@@ -342,9 +324,7 @@ export default function Home() {
                 <td className="border border-black px-2 py-2">
                 {truncateDescription(item.description)}
                 </td>
-                <td className="border border-black px-2 py-2 text-right">
-                  {item.quantity}
-                </td>
+               
                 <td className="border border-black px-2 text-center py-2">
                   <button
                     onClick={() => handleEdit(item)}
@@ -392,18 +372,16 @@ export default function Home() {
         <table className="min-w-full border  border-black" ref={pdfRef}>
           <thead className="bg-gray-100">
             <tr>
-              <th className="border border-black px-2 py-2">Item Code</th>
+              <th className="border border-black px-2 py-2">HSN Code</th>
               <th className="border border-black px-2 py-2">Name</th>
               <th className="border border-black px-2 py-2">Description</th>
-              <th className="border border-black px-2 py-2">
-                Min <br /> Qty
-              </th>
+              
             </tr>
           </thead>
           <tbody>
             {displayedItems.map((item) => {
               const originalIndex = fetched.findIndex((f) => f.id === item.id); // Get the original index
-              const displayNumber = `IT${String(originalIndex + 1).padStart(
+              const displayNumber = `HS${String(originalIndex + 1).padStart(
                 3,
                 "0"
               )}`; // Format as needed
@@ -419,9 +397,7 @@ export default function Home() {
                   <td className="border border-black px-2 py-2">
                   {truncateDescription(item.description)}
                   </td>
-                  <td className="border border-black px-2 py-2 text-right">
-                    {item.quantity}
-                  </td>
+                 
                 </tr>
               );
             })}

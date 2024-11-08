@@ -10,11 +10,11 @@ const QuotationFooter = ({ fetcheddata }) => {
 
           <div className="grid grid-cols-2 mt-3">
             <p className="font-bold ">GST NO</p>
-            <p>: {fetcheddata?.data.gstnumber}</p>
+            <p className='uppercase' >: {fetcheddata?.data.gstnumber}</p>
           </div>
           <div className="grid grid-cols-2 mt-2">
             <p className="uppercase font-bold">Kind Attention</p>
-            <p className="font-normal">: {fetcheddata?.data.kindattention}</p>
+            <p className="font-normal uppercase">: {fetcheddata?.data.kindattention}</p>
           </div>
         </div>
         <div className="px-2 w-2/5 capitalize font-semibold">

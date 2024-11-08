@@ -3,8 +3,8 @@ import React from 'react';
 
 const Discount = ({ input, handleInputChange }) => {
   return (
-    <div className="grid grid-cols-4 gap-4 mt-5">
-      <div>
+    <div className="grid grid-cols-4 gap-4  mt-5">
+      <div className='' >
         <label className="text-sm font-semibold">Discount Amount (%)</label>
         <input
           type="number"

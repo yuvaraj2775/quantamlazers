@@ -9,6 +9,8 @@ import {
   ClipboardDocumentIcon
 } from "@heroicons/react/24/solid";
 import { usePathname } from 'next/navigation';
+import { DiCodeBadge } from "react-icons/di";
+import { LuFileCode } from "react-icons/lu";
 
 export default function  Dashboard() {
 
@@ -23,8 +25,16 @@ export default function  Dashboard() {
     {
       name: "Item Master",
       href: "/Itemmaster",
-      icon: ClipboardDocumentListIcon,
+      icon: DiCodeBadge 
+      ,
     },
+    {
+      name: "HSN Master",
+      href: "/hsnmaster",
+      icon: LuFileCode 
+      ,
+    },
+    { name: "Company", href: "/companydetails", icon: ClipboardDocumentIcon },
   ];
   function classNames(...classes) {
     return classes.filter(Boolean).join(" ");

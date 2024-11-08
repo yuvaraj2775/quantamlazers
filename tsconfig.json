@@ -7,15 +7,43 @@
     ],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false,
+    "baseUrl": ".",
+    "typeRoots": [
+      "types"
+    ],
+    "paths": {
+      "@/components/": [
+        "Components/"
+      ],
+      "@/actions/": [
+        "actions/"
+      ],
+      "@/pages/": [
+        "pages/"
+      ],
+      "@/app/": [
+        "app/"
+      ],
+      "@/lib/": [
+        "lib/"
+      ],
+      "@/libs/": [
+        "libs/"
+      ],
+      "@/styles/": [
+        "styles/"
+      ]
+    },
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
-    "incremental": true,
-    "module": "esnext",
     "esModuleInterop": true,
+    "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+    "incremental": true,
     "plugins": [
       {
         "name": "next"
@@ -24,9 +52,11 @@
   },
   "include": [
     "next-env.d.ts",
-    ".next/types/**/*.ts",
-    "**/*.ts",
-    "**/*.tsx"
+    "/.ts",
+    "/.tsx",
+    ".next/types//*.ts",
+    "Components/DatePicker.js",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

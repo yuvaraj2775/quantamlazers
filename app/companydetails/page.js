@@ -1,26 +1,26 @@
-"use client";
-import { useState } from "react";
-import { Company } from "./Company";
+"use client"
+import React, { useState } from 'react'
+import  Company  from "./Company";
 
 const tabs = [
   { name: 'Company Details', href: '#' },
-  { name: 'Other Details', href: '#' },
+//   { name: 'Other Details', href: '#' },
 ];
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default  Page() {
-  const [activeTab, setActiveTab] = useState("Company Details");
+const page = () => {
+    const [activeTab, setActiveTab] = useState("Company Details");
+
 
   const handleTab = (tabValue) => {
     setActiveTab(tabValue);
   };
-
   return (
-    <div>
-      <div className="sm:hidden">
+    <div className='mt-5 h-screen overflow-y-auto px-3'>
+      <div className="sm:hidden  ">
         <label htmlFor="tabs" className="sr-only">
           Select a tab
         </label>
@@ -63,7 +63,11 @@ export default  Page() {
             <Company />
           </div>
         )}
+
+        
       </div>
     </div>
-  );
+  )
 }
+
+export default page

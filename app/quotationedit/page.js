@@ -35,6 +35,116 @@ const page = () => {
   const searchid = useSearchParams().get("id");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
+  const [itemdata, setitemdata] = useState([]);
+  const [newItemDescription, setNewItemDescription] = useState("");
+  const [addingNewIndex, setAddingNewIndex] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [hsndata, sethsndata] = useState([]);
+  const [hsnSuggestions, setHsnSuggestions] = useState([]);
+  const [newHsnCode, setNewHsnCode] = useState("");
+  const [addingNewHsnIndex, setAddingNewHsnIndex] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("/api/itemmaster");
+        if (!response.ok) throw new Error("failed to fetch data");
+        const result = await response.json();
+        setitemdata(result.data || []);
+      } catch (error) {
+        console.log("fetch failes:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const suggestions = itemdata.map((item, index) => ({
+      name: `${item.name} (IT${String(index + 1).padStart(3, "0")})`, // Formatted name
+      enabled: item.enabled, // Include the enabled property
+    }));
+
+    setSuggestions(suggestions);
+  }, [itemdata]);
+
+  const saveCustomValue = (index) => {
+    if (newItemDescription.trim()) {
+      setformdata((prevFormData) => {
+        const updatedItems = [...prevFormData.items];
+        updatedItems[index] = {
+          ...updatedItems[index],
+          description: newItemDescription, // Update the description
+        };
+        return { ...prevFormData, items: updatedItems };
+      });
+
+      // Add the new item to suggestions
+      setSuggestions((prevSuggestions) => [
+        ...prevSuggestions,
+        {
+          name: newItemDescription,
+          enabled: 1,
+        },
+      ]);
+
+      setAddingNewIndex(null);
+      setNewItemDescription("");
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("/api/hsnmaster");
+        if (!response.ok) throw new Error("failed to fetch data");
+        const result = await response.json();
+        sethsndata(result.data || []);
+      } catch (error) {
+        console.log("fetch failes:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const hsnSuggestions = hsndata.map((item, index) => ({
+      name: `${item.name} (IT${String(index + 1).padStart(3, "0")})`, // Formatted name
+      enabled: item.enabled, // Include the enabled property
+    }));
+
+    setHsnSuggestions(hsnSuggestions);
+  }, [hsndata]);
+
+  const saveHsnValue = (index) => {
+    if (newHsnCode.trim()) {
+      setformdata((prevFormData) => {
+        const updatedItems = [...prevFormData.items];
+        updatedItems[index] = {
+          ...updatedItems[index],
+          hsncode: newHsnCode, // Make sure this is lowercase and matches in all places
+        };
+        return { ...prevFormData, items: updatedItems };
+      });
+  
+      // Add the new HSN code to suggestions
+      setHsnSuggestions((prevSuggestions) => [
+        ...prevSuggestions,
+        {
+          name: newHsnCode,
+          enabled: 1,
+        },
+      ]);
+  
+      setAddingNewHsnIndex(null);
+      setNewHsnCode("");
+    }
+  };
+  
+
+  const handleAddNew = (index) => {
+    setAddingNewIndex(index);
+    setNewItemDescription(""); // Clear any previous new item input
+  };
 
   const calculateTotals = () => {
     const subtotal = formdata.items.reduce((sum, item) => {
@@ -270,6 +380,16 @@ const page = () => {
     setDeleteDialogOpen(false);
     setRowToDelete(null);
   };
+
+  const handleNewItemDescriptionChange = (e) => {
+    const value = e.target.value;
+    setNewItemDescription(value.charAt(0).toUpperCase() + value.slice(1).toLowerCase());
+  };
+
+  const handleNewHsnCodeChange = (e) => {
+    const value = e.target.value;
+    setNewHsnCode(value.charAt(0).toUpperCase() + value.slice(1).toLowerCase());
+  };
   return (
     <form
       onSubmit={handlesubmit}
@@ -283,12 +403,320 @@ const page = () => {
 
       <Addressform formdata={formdata} handleInputChange={handleInputChange} />
 
-      <Itemtable
-        formdata={formdata}
-        handleItemChange={handleItemChange}
-        handleAddRow={handleAddRow}
-        openDeleteDialog={openDeleteDialog}
-      />
+      <div className="overflow-x-auto mt-5">
+        <table className="border border-gray-300 custom-table">
+          <thead className="bg-gray-200">
+            <tr>
+              <th className="border border-gray-300 p-2">SL.NO</th>
+              <th className="border border-gray-300 p-2">
+                Item Name/Description
+              </th>
+              <th className="border border-gray-300 p-2">HSN Code</th>
+              <th className="border border-gray-300 p-2 px-2 w-20">Qty</th>
+              <th className="border border-gray-300 p-2">Unit</th>
+              <th className="border border-gray-300 p-2 px-2 w-20">
+                Unit Cost
+              </th>
+              <th className="border border-gray-300 p-2">Taxable Value</th>
+              <th className="border border-gray-300 p-2">Type of Tax</th>
+              <th className="border border-gray-300 p-2">%</th>
+              <th className="border border-gray-300 p-2">Tax Amt</th>
+              <th className="border border-gray-300 p-2">Type of Tax</th>
+              <th className="border border-gray-300 p-2">%</th>
+              <th className="border border-gray-300 p-2">Tax Amt</th>
+              <th className="border border-gray-300 p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {formdata?.items.map((item, index) => (
+              <tr key={index} className="border-b hover:bg-gray-50">
+                <td className="border border-gray-300 p-2 text-center">
+                  {index + 1}
+                </td>
+                <td className="border border-gray-300 p-2">
+                  {addingNewIndex !== index ? (
+                    <select
+                      className="border w-52  h-10 px-2"
+                      name="description"
+                      value={formdata.items[index]?.description || ""} // Use formData.items[index].description
+                      required
+                      onChange={(e) => {
+                        if (e.target.value === "add-new") {
+                          handleAddNew(index);
+                        } else {
+                          handleItemChange(index, e);
+                        }
+                      }}
+                      style={{
+                        color:
+                          suggestions.find(
+                            (suggestion) =>
+                              suggestion.name ===
+                              formdata.items[index]?.description
+                          )?.enabled === 0
+                            ? "red"
+                            : "black",
+                      }}
+                    >
+                      <option value="">Select an item</option>
+
+                      {/* Render existing suggestions */}
+                      {suggestions.map((suggestion, suggestionIndex) => (
+                        <option
+                          key={suggestionIndex}
+                          value={suggestion.name}
+                          style={{
+                            color: suggestion.enabled === 0 ? "red" : "black",
+                          }}
+                        >
+                          {suggestion.name}
+                        </option>
+                      ))}
+
+                      {/* Add the current description if it’s not in suggestions */}
+                      {formdata.items[index]?.description &&
+                        !suggestions.find(
+                          (suggestion) =>
+                            suggestion.name ===
+                            formdata.items[index].description
+                        ) && (
+                          <option value={formdata.items[index].description}>
+                            {formdata.items[index].description}
+                          </option>
+                        )}
+
+                      <option value="add-new">Add New...</option>
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      className="border w-52  h-10 px-2 mt-2"
+                      placeholder="Enter new item"
+                      name="description"
+                      value={newItemDescription} // Ensure this reflects the current input state
+                      onChange={handleNewItemDescriptionChange}
+                      onBlur={() => saveCustomValue(index)}
+                    />
+                  )}
+                </td>
+
+                <td className="border border-gray-300 p-2">
+  {addingNewHsnIndex !== index ? (
+    <select
+      className="border w-52  h-10 px-2"
+      name="hsncode"
+      value={formdata.items[index]?.hsncode || ""} // Ensure this matches your state structure
+      required
+      onChange={(e) => {
+        if (e.target.value === "add-new") {
+          setAddingNewHsnIndex(index);
+        } else {
+          handleItemChange(index, e); // Update to use handleItemChange
+        }
+      }}
+      style={{
+        color:
+          hsnSuggestions.find(
+            (suggestion) =>
+              suggestion.name === formdata.items[index]?.hsncode
+          )?.enabled === 0
+            ? "red"
+            : "black",
+      }}
+    >
+      <option value="">Select an HSN Code</option>
+
+      {/* Render existing HSN suggestions */}
+      {hsnSuggestions.map((suggestion, suggestionIndex) => (
+        <option
+          key={suggestionIndex}
+          value={suggestion.name}
+          style={{
+            color: suggestion.enabled === 0 ? "red" : "black",
+          }}
+        >
+          {suggestion.name}
+        </option>
+      ))}
+
+      {/* Add the current HSN code if it’s not in hsnSuggestions */}
+      {formdata.items[index]?.hsncode &&
+        !hsnSuggestions.find(
+          (suggestion) =>
+            suggestion.name === formdata.items[index].hsncode
+        ) && (
+          <option value={formdata.items[index].hsncode}>
+            {formdata.items[index].hsncode}
+          </option>
+        )}
+
+      <option value="add-new">Add New...</option>
+    </select>
+  ) : (
+    <input
+      type="text"
+      className="border w-52  h-10 px-2 mt-2"
+      placeholder="Enter new HSN Code"
+      name="hsncode"
+      value={newHsnCode} // Reflect the current input state
+      onChange={handleNewHsnCodeChange}
+      onBlur={() => saveHsnValue(index)}
+    />
+  )}
+</td>
+
+
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="number"
+                    className="border px-2 text-right border-gray-300 w-24 rounded-md h-10"
+                    name="qty"
+                    value={item.qty}
+                    onChange={(e) => handleItemChange(index, e)}
+                  />
+                </td>
+                <td className="border border-gray-300 p-2 w-16">
+                  <select
+                    name="unit"
+                    onChange={(e) => handleItemChange(index, e)}
+                    value={item.unit}
+                    className="border border-gray-300 rounded-md h-10 w-16"
+                  >
+                    <option value="NOS">NOS</option>
+                    <option value="EACH">EACH</option>
+                    <option value="SET">SET</option>
+                  </select>
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="number"
+                    className="border text-right border-gray-300 rounded-md w-24 h-10 px-2"
+                    name="unitCost"
+                    value={item.unitCost}
+                    onChange={(e) => handleItemChange(index, e)}
+                  />
+                </td>
+                <td className="border border-gray-300 p-2">
+                  <input
+                    type="text"
+                    className="border text-right border-gray-300 rounded-md w-full h-10 px-2"
+                    name="taxableValue"
+                    value={item.taxableValue}
+                    readOnly
+                  />
+                </td>
+                <td className="border border-gray-300 p-2 w-16">
+                  <select
+                    name="taxtype"
+                    className="border border-gray-300 rounded-md h-10 w-16"
+                    onChange={(e) => handleItemChange(index, e)}
+                    value={item.taxtype}
+                  >
+                    <option value="CGST">CGST</option>
+                    <option value="IGST">IGST</option>
+                  </select>
+                </td>
+                <td className="border border-gray-300 p-2 w-10">
+                  <input
+                    type="text"
+                    className="border text-right border-gray-300 rounded-md w-10 h-10 px-2"
+                    name="percentage"
+                    value={item.percentage}
+                    onChange={(e) => handleItemChange(index, e)}
+                  />
+                </td>
+                <td className="border border-gray-300 p-2 w-16">
+                  <input
+                    type="text"
+                    className="border text-right border-gray-300 rounded-md w-16 h-10 px-2"
+                    name="taxamt"
+                    value={item.taxamt}
+                    readOnly
+                  />
+                </td>
+                <td className="border border-gray-300 p-2 w-16">
+                  <select
+                    name="typeoftax"
+                    onChange={(e) => handleItemChange(index, e)}
+                    value={item.typeoftax}
+                    className="border border-gray-300 rounded-md h-10 w-16"
+                  >
+                    {item.taxtype === "CGST" ? (
+                      <option value="SGST">SGST</option>
+                    ) : (
+                      <option value="UGST">UGST</option>
+                    )}
+                  </select>
+                </td>
+                <td className="border border-gray-300 p-2 w-14">
+                  <input
+                    type="text"
+                    className="border text-right border-gray-300 rounded-md w-14 h-10 px-2"
+                    name="percentage2"
+                    value={item.percentage2}
+                    onChange={(e) => handleItemChange(index, e)}
+                  />
+                </td>
+                <td className="border border-gray-300 p-2 w-14">
+                  <input
+                    type="text"
+                    className="border text-right border-gray-300 rounded-md w-14 h-10 px-2"
+                    name="taxamt2"
+                    value={item.taxamt2}
+                    readOnly
+                  />
+                </td>
+                <td className="flex justify-center items-center mt-3 border-gray-300 space-x-2 px-2">
+                  <button
+                    type="button"
+                    onClick={handleAddRow}
+                    className="flex items-center justify-center w-8 h-8 text-green-700 bg-green-100 rounded-full hover:bg-green-200 transition"
+                    title="Add Row"
+                  >
+                    <PlusIcon className="w-5 h-5" />
+                  </button>
+                  {index === 0 ? (
+                    <button
+                      type="button"
+                      className="flex items-center justify-center w-8 h-8 text-gray-400 bg-gray-200 rounded-full"
+                      title="First row cannot be deleted"
+                      disabled
+                    >
+                      <XMarkIcon className="w-5 h-5" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => openDeleteDialog(index)}
+                      className="flex items-center justify-center w-8 h-8 text-red-900 bg-red-100 rounded-full hover:bg-red-200 transition"
+                      title="Delete Row"
+                    >
+                      <XMarkIcon className="w-5 h-5" />
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td></td>
+              <td className="w-[50%]">
+                <label className="text-sm font-semibold">
+                  Total Number of Quantities:
+                </label>
+              </td>
+              <td></td>
+              <td className="text-right pr-8">
+                <p>
+                  {formdata?.items.reduce(
+                    (sum, item) => sum + (parseInt(item.qty) || 0),
+                    0
+                  )}
+                </p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       {/* Additional Costs Section */}
       <div className="grid grid-cols-4 gap-4 mt-5">
